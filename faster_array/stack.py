@@ -1,6 +1,7 @@
 import loopy as lp
 import numpy as np
 import islpy as isl
+from faster_array.array import ArraySymbol
 from pytools import UniqueNameGenerator, Record
 from pymbolic import parse
 from loopy.isl_helpers import make_slab
@@ -55,14 +56,15 @@ class Stack(Record):
         """
         Adds statements and domains to initialize an array to 0.
 
-        :return: An instance of :class:`loopy.GlobalArg`, corresponding to the
+        :return: An instance of :class:`loopy.ArraySymbol`, corresponding to the
             array which and created and initialized to 0.
         """
         if isinstance(shape, int):
             shape = (shape, )
         assert isinstance(shape, tuple)
 
-        arg = lp.GlobalArg(
+        arg = ArraySymbol(
+                stack=self,
                 name=self.name_generator(based_on='array'),
                 shape=shape,
                 dtype=dtype)
@@ -78,14 +80,15 @@ class Stack(Record):
         """
         Adds statements and domains to initialize an array to 1.
 
-        :return: An instance of :class:`loopy.GlobalArg`, corresponding to the
+        :return: An instance of :class:`loopy.ArraySymbol`, corresponding to the
             array which and created and initialized to 0.
         """
         if isinstance(shape, int):
             shape = (shape, )
         assert isinstance(shape, tuple)
 
-        arg = lp.GlobalArg(
+        arg = ArraySymbol(
+                stack=self,
                 name=self.name_generator(based_on='array'),
                 shape=shape,
                 dtype=dtype)
@@ -130,7 +133,8 @@ class Stack(Record):
             else:
                 return (1, )
 
-        summed_arg = lp.GlobalArg(
+        summed_arg = ArraySymbol(
+                stack=self,
                 name=self.name_generator(based_on="array_sum"),
                 shape=_one_if_empty(tuple(axis_len for i, axis_len in
                     enumerate(arg.shape) if i not in axis)),
@@ -163,6 +167,7 @@ class Stack(Record):
                 self.domains,
                 self.statements,
                 kernel_data=self.data,
+                seq_dependencies=True,
                 lang_version=(2018, 2))
 
         return knl
