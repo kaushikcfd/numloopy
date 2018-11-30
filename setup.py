@@ -44,8 +44,8 @@ setup(name="faster_array",
           "numpy>=1.6.0",
           ],
 
-      author="Andreas Kleockner",
+      author="How Yadoin",
       # url="http://pypi.python.org/pypi/pytools",
-      author_email="svlin2@illinois.edu",
+      author_email="kgk2@illinois.edu",
       license="MIT",
       packages=find_packages())
