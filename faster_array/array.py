@@ -1,4 +1,6 @@
 import loopy as lp
+from numbers import Number
+from pymbolic.primitives import Variable, Call
 
 
 class ArraySymbol(lp.ArrayArg):
@@ -22,3 +24,16 @@ class ArraySymbol(lp.ArrayArg):
         kwargs["stack"] = stack
 
         super(ArraySymbol, self).__init__(*args, **kwargs)
+
+    def __add__(self, other):
+        if isinstance(other, Number):
+            inames = tuple(
+                   Variable(self.stack.name_generator(based_on='i')) for _ in
+                   self.shape)
+            rhs = Call(function=self.name, parameters=inames) + other
+            subst_name = self.stack.name_generator(based_on='subst')
+            self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
+                    inames, rhs)
+            return self.copy(name=subst_name)
+        else:
+            raise NotImplementedError('__add__ for', type(other))
