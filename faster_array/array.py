@@ -16,6 +16,7 @@ class ArraySymbol(lp.ArrayArg):
     def __init__(self, *args, **kwargs):
         address_space = kwargs.pop("address_space", lp.AddressSpace.GLOBAL)
         stack = kwargs.pop("stack", None)
+        assert isinstance(kwargs['shape'], tuple)
 
         if stack is None:
             raise TypeError("must pass 'stack' to ArraySymbol")

@@ -45,9 +45,10 @@ class Stack(Record):
 
         An instance of :class:`list` which contains the parameters
     """
-    def __init__(self, substitutions={}, parameters=[],
+    def __init__(self, domains=[], substitutions={}, parameters=[],
             name_generator=UniqueNameGenerator()):
 
+        self.domains = domains
         self.substitutions = substitutions
         self.parameters = parameters
 
@@ -143,6 +144,8 @@ class Stack(Record):
         for axis_len, iname in zip(arg.shape, inames):
             domain &= make_slab(space, iname, 0, axis_len)
 
+        self.domains.append(domain)
+
         reduction_inames = tuple(iname for i, iname in enumerate(inames) if i in
                 axis)
         left_inames = tuple(iname for i, iname in enumerate(inames) if i not in
@@ -186,28 +189,32 @@ class Stack(Record):
         that must be computed
         """
         statements = []
-        domains = []
+        domains = self.domains[:]
         data = []
         for arg in variables_needed:
-            inames = tuple(self.name_generator(based_on='i') for _ in arg.shape)
-
-            space = isl.Space.create_from_names(isl.DEFAULT_CONTEXT, inames)
-            domain = isl.BasicSet.universe(space)
-
-            for iname_name, axis_length in zip(inames, arg.shape):
-                domain &= make_slab(space, iname_name, 0, axis_length)
 
             arg_name = self.name_generator(arg.name+'_arg')
             data.append(arg.copy(name=arg_name))
+            if arg.shape != (1, ):
+                inames = tuple(self.name_generator(based_on='i') for _ in arg.shape)
+                space = isl.Space.create_from_names(isl.DEFAULT_CONTEXT, inames)
+                domain = isl.BasicSet.universe(space)
 
-            assignee = parse('{}[{}]'.format(arg_name,
-                ', '.join(inames)))
-            stmnt = lp.Assignment(assignee=assignee,
-                    expression=parse('{}({})'.format(arg.name,
-                        ', '.join(inames))))
+                for iname_name, axis_length in zip(inames, arg.shape):
+                    domain &= make_slab(space, iname_name, 0, axis_length)
 
+                assignee = parse('{}[{}]'.format(arg_name,
+                    ', '.join(inames)))
+                stmnt = lp.Assignment(assignee=assignee,
+                        expression=parse('{}({})'.format(arg.name,
+                            ', '.join(inames))))
+
+                domains.append(domain)
+            else:
+                assignee = parse('{}[0]'.format(arg_name))
+                stmnt = lp.Assignment(assignee=assignee,
+                        expression=parse('{}()'.format(arg.name)))
             statements.append(stmnt)
-            domains.append(domain)
 
         knl = lp.make_kernel(
                 domains=domains,
