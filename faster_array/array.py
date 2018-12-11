@@ -1,4 +1,5 @@
 import loopy as lp
+import numpy as np
 from numbers import Number
 from pymbolic.primitives import Variable, Call
 
@@ -31,45 +32,45 @@ class ArraySymbol(lp.ArrayArg):
 
         def _apply_op(var1, var2):
             if op == '+':
-                return var1+var2
+                return var1+var2, self.dtype
             if op == '*':
-                return var1*var2
+                return var1*var2, self.dtype
             if op == '/':
-                return var1/var2
+                return var1/var2, self.dtype
             if op == '<':
-                return var1 < var2
+                return var1.lt(var2), np.int
             if op == '<=':
-                return var1 <= var2
+                return var1.le(var2), np.int
             if op == '>':
-                return var1 < var2
+                return var1.gt(var2), np.int
             if op == '>=':
-                return var1 <= var2
+                return var1.ge(var2), np.int
             raise RuntimeError()
 
         if isinstance(other, Number):
             inames = tuple(
                    self.stack.name_generator(based_on='i') for _ in
                    self.shape)
-            rhs = _apply_op(Call(function=Variable(self.name),
+            rhs, dtype = _apply_op(Call(function=Variable(self.name),
                     parameters=tuple(Variable(iname) for iname in inames)),
                     other)
             subst_name = self.stack.name_generator(based_on='subst')
             self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
                     inames, rhs)
-            return self.copy(name=subst_name)
+            return self.copy(name=subst_name, dtype=dtype)
         elif isinstance(other, ArraySymbol):
             if other.shape == (1, ):
                 # extend this to the broadcasting logic
                 inames = tuple(
                        self.stack.name_generator(based_on='i') for _ in
                        self.shape)
-                rhs = _apply_op((Call(function=Variable(self.name),
+                rhs, dtype = _apply_op((Call(function=Variable(self.name),
                         parameters=tuple(Variable(iname) for iname in inames)),
                         Variable(other.name)()))
                 subst_name = self.stack.name_generator(based_on='subst')
                 self.stack.substitutions[subst_name] = lp.SubstitutionRule(
                         subst_name, inames, rhs)
-                return self.copy(name=subst_name)
+                return self.copy(name=subst_name, dtype=dtype)
 
             if not self.shape == other.shape:
                 raise NotImplementedError('At this moment broadcasting is not '
@@ -77,13 +78,13 @@ class ArraySymbol(lp.ArrayArg):
             inames = tuple(
                    self.stack.name_generator(based_on='i') for _ in
                    self.shape)
-            rhs = _apply_op(Variable(self.name)(*tuple(Variable(iname) for
+            rhs, dtype = _apply_op(Variable(self.name)(*tuple(Variable(iname) for
                 iname in inames)), Variable(other.name)(*tuple(Variable(iname) for
                 iname in inames)))
             subst_name = self.stack.name_generator(based_on='subst')
             self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
                     inames, rhs)
-            return self.copy(name=subst_name)
+            return self.copy(name=subst_name, dtype=dtype)
         else:
             raise NotImplementedError('__mul__ for', type(other))
 
@@ -95,6 +96,12 @@ class ArraySymbol(lp.ArrayArg):
 
     def __truediv__(self, other):
         return self._arithmetic_op(other, '/')
+
+    def __lt__(self, other):
+        return self._arithmetic_op(other, '<')
+
+    def __gt__(self, other):
+        return self._arithmetic_op(other, '>')
 
     def __getitem__(self, index):
         right_inames = []
@@ -116,8 +123,6 @@ class ArraySymbol(lp.ArrayArg):
             else:
                 raise TypeError('can be subscripted only with slices or '
                         'integers')
-
-        print(right_inames)
 
         rhs = Call(Variable(self.name), tuple(right_inames))
         subst_name = self.stack.name_generator(based_on='subst')
