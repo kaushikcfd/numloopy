@@ -28,11 +28,13 @@ class ArraySymbol(lp.ArrayArg):
         super(ArraySymbol, self).__init__(*args, **kwargs)
 
     def _arithmetic_op(self, other, op):
-        assert op in ['+', '*', '/', '<', '<=', '>', '>=']
+        assert op in ['+', '-', '*', '/', '<', '<=', '>', '>=']
 
         def _apply_op(var1, var2):
             if op == '+':
                 return var1+var2, self.dtype
+            if op == '-':
+                return var1-var2, self.dtype
             if op == '*':
                 return var1*var2, self.dtype
             if op == '/':
@@ -64,9 +66,9 @@ class ArraySymbol(lp.ArrayArg):
                 inames = tuple(
                        self.stack.name_generator(based_on='i') for _ in
                        self.shape)
-                rhs, dtype = _apply_op((Call(function=Variable(self.name),
+                rhs, dtype = _apply_op(Call(function=Variable(self.name),
                         parameters=tuple(Variable(iname) for iname in inames)),
-                        Variable(other.name)()))
+                        Variable(other.name)())
                 subst_name = self.stack.name_generator(based_on='subst')
                 self.stack.substitutions[subst_name] = lp.SubstitutionRule(
                         subst_name, inames, rhs)
@@ -91,6 +93,12 @@ class ArraySymbol(lp.ArrayArg):
     def __add__(self, other):
         return self._arithmetic_op(other, '+')
 
+    def __sub__(self, other):
+        return self._arithmetic_op(other, '-')
+
+    def __rsub__(self, other):
+        return -1*self._arithmetic_op(other, '-')
+
     def __mul__(self, other):
         return self._arithmetic_op(other, '*')
 
@@ -104,6 +112,10 @@ class ArraySymbol(lp.ArrayArg):
         return self._arithmetic_op(other, '>')
 
     def __getitem__(self, index):
+        if isinstance(index, Number):
+            index = (index, )
+        assert isinstance(index, tuple)
+
         right_inames = []
         left_inames = []
         shape = []
