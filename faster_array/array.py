@@ -1,6 +1,6 @@
 import loopy as lp
 from numbers import Number
-from pymbolic.primitives import Variable, Call, Subscript
+from pymbolic.primitives import Variable, Call
 
 
 class ArraySymbol(lp.ArrayArg):
@@ -26,55 +26,60 @@ class ArraySymbol(lp.ArrayArg):
 
         super(ArraySymbol, self).__init__(*args, **kwargs)
 
-    def __add__(self, other):
-        if isinstance(other, Number):
-            inames = tuple(
-                   self.stack.name_generator(based_on='i') for _ in
-                   self.shape)
-            rhs = Call(function=Variable(self.name),
-                    parameters=tuple(Variable(iname) for iname in inames)) + other
-            subst_name = self.stack.name_generator(based_on='subst')
-            self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
-                    inames, rhs)
-            return self.copy(name=subst_name)
-        elif isinstance(other, ArraySymbol):
-            if not self.shape == other.shape:
-                raise NotImplementedError('At this moment broadcasting is not '
-                        'supported. But support for it will be added soon!')
-            inames = tuple(
-                   self.stack.name_generator(based_on='i') for _ in
-                   self.shape)
-            rhs = Variable(self.name)(*tuple(Variable(iname) for
-                iname in inames)) + Variable(other.name)(*tuple(Variable(iname) for
-                iname in inames))
-            subst_name = self.stack.name_generator(based_on='subst')
-            self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
-                    inames, rhs)
-            return self.copy(name=subst_name)
-        else:
-            raise NotImplementedError('__add__ for', type(other))
+    def _arithmetic_op(self, other, op):
+        assert op in ['+', '*', '/', '<', '<=', '>', '>=']
 
-    def __mul__(self, other):
+        def _apply_op(var1, var2):
+            if op == '+':
+                return var1+var2
+            if op == '*':
+                return var1*var2
+            if op == '/':
+                return var1/var2
+            if op == '<':
+                return var1 < var2
+            if op == '<=':
+                return var1 <= var2
+            if op == '>':
+                return var1 < var2
+            if op == '>=':
+                return var1 <= var2
+            raise RuntimeError()
+
         if isinstance(other, Number):
             inames = tuple(
                    self.stack.name_generator(based_on='i') for _ in
                    self.shape)
-            rhs = Call(function=Variable(self.name),
-                    parameters=tuple(Variable(iname) for iname in inames)) * other
+            rhs = _apply_op(Call(function=Variable(self.name),
+                    parameters=tuple(Variable(iname) for iname in inames)),
+                    other)
             subst_name = self.stack.name_generator(based_on='subst')
             self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
                     inames, rhs)
             return self.copy(name=subst_name)
         elif isinstance(other, ArraySymbol):
+            if other.shape == (1, ):
+                # extend this to the broadcasting logic
+                inames = tuple(
+                       self.stack.name_generator(based_on='i') for _ in
+                       self.shape)
+                rhs = _apply_op((Call(function=Variable(self.name),
+                        parameters=tuple(Variable(iname) for iname in inames)),
+                        Variable(other.name)()))
+                subst_name = self.stack.name_generator(based_on='subst')
+                self.stack.substitutions[subst_name] = lp.SubstitutionRule(
+                        subst_name, inames, rhs)
+                return self.copy(name=subst_name)
+
             if not self.shape == other.shape:
                 raise NotImplementedError('At this moment broadcasting is not '
                         'supported. But support for it will be added soon!')
             inames = tuple(
                    self.stack.name_generator(based_on='i') for _ in
                    self.shape)
-            rhs = Variable(self.name)(*tuple(Variable(iname) for
-                iname in inames)) * Variable(other.name)(*tuple(Variable(iname) for
-                iname in inames))
+            rhs = _apply_op(Variable(self.name)(*tuple(Variable(iname) for
+                iname in inames)), Variable(other.name)(*tuple(Variable(iname) for
+                iname in inames)))
             subst_name = self.stack.name_generator(based_on='subst')
             self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
                     inames, rhs)
@@ -82,33 +87,14 @@ class ArraySymbol(lp.ArrayArg):
         else:
             raise NotImplementedError('__mul__ for', type(other))
 
+    def __add__(self, other):
+        return self._arithmetic_op(other, '+')
+
+    def __mul__(self, other):
+        return self._arithmetic_op(other, '*')
+
     def __truediv__(self, other):
-        if isinstance(other, Number):
-            inames = tuple(
-                   self.stack.name_generator(based_on='i') for _ in
-                   self.shape)
-            rhs = Call(function=Variable(self.name),
-                    parameters=tuple(Variable(iname) for iname in inames)) / other
-            subst_name = self.stack.name_generator(based_on='subst')
-            self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
-                    inames, rhs)
-            return self.copy(name=subst_name)
-        elif isinstance(other, ArraySymbol):
-            if not self.shape == other.shape:
-                raise NotImplementedError('At this moment broadcasting is not '
-                        'supported. But support for it will be added soon!')
-            inames = tuple(
-                   self.stack.name_generator(based_on='i') for _ in
-                   self.shape)
-            rhs = Variable(self.name)(*tuple(Variable(iname) for
-                iname in inames)) / Variable(other.name)(*tuple(Variable(iname) for
-                iname in inames))
-            subst_name = self.stack.name_generator(based_on='subst')
-            self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
-                    inames, rhs)
-            return self.copy(name=subst_name)
-        else:
-            raise NotImplementedError('__div__ for', type(other))
+        return self._arithmetic_op(other, '/')
 
     def __getitem__(self, index):
         right_inames = []
