@@ -61,7 +61,7 @@ class Stack(Record):
         An instance of :class:`list` which contains the parameters
     """
     def __init__(self, domains=[], substitutions={}, parameters=[],
-            data=[], substs_to_arrays={},
+            data=[], substs_to_arrays={}, stack_compute_num=0,
             name_generator=UniqueNameGenerator()):
 
         self.domains = domains
@@ -69,8 +69,12 @@ class Stack(Record):
         self.parameters = parameters
         self.data = data
         self.substs_to_arrays = substs_to_arrays
+        self.stack_compute_num = stack_compute_num
 
         self.name_generator = name_generator
+
+    def increment_compute_counter(self):
+        self.stack_compute_num += 1
 
     def zeros(self, shape, dtype=np.float64):
         """

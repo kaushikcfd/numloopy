@@ -86,7 +86,9 @@ class ArraySymbol(lp.ArrayArg):
             subst_name = self.stack.name_generator(based_on='subst')
             self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
                     inames, rhs)
-            return self.copy(name=subst_name, dtype=dtype)
+            self.stack.substitution.increment_counter()
+            return self.copy(name=subst_name, dtype=dtype,
+                    count=self.stack.stack_compute_num)
         else:
             raise NotImplementedError('__mul__ for', type(other))
 
