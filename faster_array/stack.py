@@ -1,9 +1,11 @@
 import loopy as lp
+from loopy.symbolic import IdentityMapper
 import numpy as np
 import islpy as isl
 from faster_array.array import ArraySymbol
 from pytools import UniqueNameGenerator, Record
 from pymbolic import parse
+from pymbolic.primitives import Variable, Subscript
 from loopy.isl_helpers import make_slab
 from numbers import Number
 
@@ -26,6 +28,19 @@ def fill_array(shape, value, name_generator):
     rule = lp.SubstitutionRule(subst_name, inames, rhs)
 
     return subst_name, rule, name_generator
+
+
+class SubstToArrayExapander(IdentityMapper):
+    def __init__(self, substs_to_args):
+        self.substs_to_args = substs_to_args
+
+    def map_call(self, expr):
+        if expr.function.name in self.substs_to_args:
+            return Subscript(
+                Variable(self.substs_to_args[expr.function.name]),
+                tuple(self.rec(par) for par in expr.parameters))
+
+        return super(SubstToArrayExapander, self).map_call(expr)
 
 
 class Stack(Record):
@@ -191,10 +206,17 @@ class Stack(Record):
         statements = []
         domains = self.domains[:]
         data = []
-        for arg in variables_needed:
+        substs_to_arrays = {}
+        for i, arg in enumerate(variables_needed):
+            substs_to_arg_mapper = SubstToArrayExapander(
+                    substs_to_arrays.copy())
+            rule = self.substitutions[arg.name]
+            self.substitutions[arg.name] = rule.copy(
+                    expression=substs_to_arg_mapper(rule.expression))
 
             arg_name = self.name_generator(arg.name+'_arg')
             data.append(arg.copy(name=arg_name))
+            substs_to_arrays[arg.name] = arg_name
             if arg.shape != (1, ):
                 inames = tuple(self.name_generator(based_on='i') for _ in arg.shape)
                 space = isl.Space.create_from_names(isl.DEFAULT_CONTEXT, inames)
@@ -208,13 +230,24 @@ class Stack(Record):
                 stmnt = lp.Assignment(assignee=assignee,
                         expression=parse('{}({})'.format(arg.name,
                             ', '.join(inames))))
-
                 domains.append(domain)
             else:
                 assignee = parse('{}[0]'.format(arg_name))
                 stmnt = lp.Assignment(assignee=assignee,
                         expression=parse('{}()'.format(arg.name)))
-            statements.append(stmnt)
+            statements.append(stmnt.with_transformed_expressions(
+                substs_to_arg_mapper))
+
+        new_substitutions = {}
+        substs_to_arg_mapper = SubstToArrayExapander(
+                substs_to_arrays.copy())
+
+        for name, rule in self.substitutions.items():
+            if name not in substs_to_arrays:
+                new_substitutions[name] = rule.copy(
+                        expression=substs_to_arg_mapper(rule.expression))
+            else:
+                new_substitutions[name] = rule
 
         knl = lp.make_kernel(
                 domains=domains,
@@ -222,8 +255,9 @@ class Stack(Record):
                 kernel_data=data,
                 seq_dependencies=True,
                 lang_version=(2018, 2))
+        knl = knl.copy(substitutions=new_substitutions)
 
-        return knl.copy(substitutions=self.substitutions.copy())
+        return knl
 
 
 def begin_computation_stack():
