@@ -1,9 +1,9 @@
 import loopy as lp
-from loopy.symbolic import IdentityMapper
 import numpy as np
 import islpy as isl
+from loopy.symbolic import IdentityMapper
 from faster_array.array import ArraySymbol
-from pytools import UniqueNameGenerator, Record
+from pytools import UniqueNameGenerator, Record, memoize_method
 from pymbolic import parse
 from pymbolic.primitives import Variable, Subscript
 from loopy.isl_helpers import make_slab
@@ -60,21 +60,30 @@ class Stack(Record):
 
         An instance of :class:`list` which contains the parameters
     """
-    def __init__(self, domains=[], substitutions={}, parameters=[],
+    def __init__(self, domains=[], registered_substitutions=[], parameters=[],
             data=[], substs_to_arrays={}, stack_compute_num=0,
             name_generator=UniqueNameGenerator()):
 
         self.domains = domains
-        self.substitutions = substitutions
         self.parameters = parameters
         self.data = data
         self.substs_to_arrays = substs_to_arrays
-        self.stack_compute_num = stack_compute_num
+        self.registered_substitutions = registered_substitutions
 
         self.name_generator = name_generator
 
-    def increment_compute_counter(self):
-        self.stack_compute_num += 1
+    def register_substitution(self, rule):
+        assert isinstance(rule, lp.SubstitutionRule)
+
+        self.registered_substitutions.append(rule)
+
+    @memoize_method
+    def get_substitution(self, name):
+        for rule in self.registered_substitutions:
+            if rule.name == name:
+                return rule
+
+        raise KeyError("Did not find the required substitution.")
 
     def zeros(self, shape, dtype=np.float64):
         """
@@ -107,7 +116,7 @@ class Stack(Record):
                 shape=shape,
                 dtype=dtype)
 
-        self.substitutions[subst_name] = rule
+        self.register_substitution(rule)
 
         return arg
 
@@ -143,7 +152,7 @@ class Stack(Record):
                 shape=shape,
                 dtype=dtype)
 
-        self.substitutions[subst_name] = rule
+        self.register_substitution(rule)
 
         return arg
 
@@ -198,7 +207,7 @@ class Stack(Record):
                     reduction_inames,
                     parse('{}({})'.format(arg.name,
                         ', '.join(inames)))))
-        self.substitutions[subst_name] = rule
+        self.register_substitution(rule)
 
         return summed_arg
 
@@ -216,8 +225,8 @@ class Stack(Record):
         rhs = Subscript(Variable(arg_name),
                 tuple(Variable(iname) for iname in inames))
         subst_name = self.name_generator(based_on='subst')
-        self.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
-                inames, rhs)
+        self.register_substitution(lp.SubstitutionRule(subst_name,
+                inames, rhs))
         self.substs_to_arrays[subst_name] = arg_name
 
         self.data.append(lp.GlobalArg(name=arg_name, shape=shape, dtype=dtype))
@@ -236,12 +245,16 @@ class Stack(Record):
         statements = []
         domains = self.domains[:]
         data = self.data[:]
+        substitutions = {}
+        for rule in self.registered_substitutions:
+            substitutions[rule.name] = rule
+
         substs_to_arrays = self.substs_to_arrays.copy()
         for i, arg in enumerate(variables_needed):
             substs_to_arg_mapper = SubstToArrayExapander(
                     substs_to_arrays.copy())
-            rule = self.substitutions[arg.name]
-            self.substitutions[arg.name] = rule.copy(
+            rule = self.get_substitution(arg.name)
+            substitutions[arg.name] = rule.copy(
                     expression=substs_to_arg_mapper(rule.expression))
 
             arg_name = self.name_generator('arr')
@@ -272,7 +285,7 @@ class Stack(Record):
         substs_to_arg_mapper = SubstToArrayExapander(
                 substs_to_arrays.copy())
 
-        for name, rule in self.substitutions.items():
+        for name, rule in substitutions.items():
             if name not in substs_to_arrays:
                 new_substitutions[name] = rule.copy(
                         expression=substs_to_arg_mapper(rule.expression))

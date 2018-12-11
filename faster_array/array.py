@@ -57,9 +57,10 @@ class ArraySymbol(lp.ArrayArg):
                     parameters=tuple(Variable(iname) for iname in inames)),
                     other)
             subst_name = self.stack.name_generator(based_on='subst')
-            self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
-                    inames, rhs)
-            return self.copy(name=subst_name, dtype=dtype)
+            self.stack.register_substitution(lp.SubstitutionRule(subst_name,
+                    inames, rhs))
+            return self.copy(name=subst_name,
+                dtype=dtype)
         elif isinstance(other, ArraySymbol):
             if other.shape == (1, ):
                 # extend this to the broadcasting logic
@@ -70,8 +71,8 @@ class ArraySymbol(lp.ArrayArg):
                         parameters=tuple(Variable(iname) for iname in inames)),
                         Variable(other.name)())
                 subst_name = self.stack.name_generator(based_on='subst')
-                self.stack.substitutions[subst_name] = lp.SubstitutionRule(
-                        subst_name, inames, rhs)
+                self.stack.register_substitution(lp.SubstitutionRule(
+                        subst_name, inames, rhs))
                 return self.copy(name=subst_name, dtype=dtype)
 
             if not self.shape == other.shape:
@@ -84,11 +85,9 @@ class ArraySymbol(lp.ArrayArg):
                 iname in inames)), Variable(other.name)(*tuple(Variable(iname) for
                 iname in inames)))
             subst_name = self.stack.name_generator(based_on='subst')
-            self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
-                    inames, rhs)
-            self.stack.substitution.increment_counter()
-            return self.copy(name=subst_name, dtype=dtype,
-                    count=self.stack.stack_compute_num)
+            self.stack.register_substitution(lp.SubstitutionRule(subst_name,
+                    inames, rhs))
+            return self.copy(name=subst_name, dtype=dtype)
         else:
             raise NotImplementedError('__mul__ for', type(other))
 
@@ -140,8 +139,8 @@ class ArraySymbol(lp.ArrayArg):
 
         rhs = Call(Variable(self.name), tuple(right_inames))
         subst_name = self.stack.name_generator(based_on='subst')
-        self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
-                    tuple(left_inames), rhs)
+        self.stack.register_substitution(lp.SubstitutionRule(subst_name,
+                    tuple(left_inames), rhs))
 
         def _one_if_empty(t):
             if t:
