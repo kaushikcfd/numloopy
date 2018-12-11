@@ -1,6 +1,6 @@
 import loopy as lp
 from numbers import Number
-from pymbolic.primitives import Variable, Call
+from pymbolic.primitives import Variable, Call, Subscript
 
 
 class ArraySymbol(lp.ArrayArg):
@@ -81,3 +81,71 @@ class ArraySymbol(lp.ArrayArg):
             return self.copy(name=subst_name)
         else:
             raise NotImplementedError('__mul__ for', type(other))
+
+    def __truediv__(self, other):
+        if isinstance(other, Number):
+            inames = tuple(
+                   self.stack.name_generator(based_on='i') for _ in
+                   self.shape)
+            rhs = Call(function=Variable(self.name),
+                    parameters=tuple(Variable(iname) for iname in inames)) / other
+            subst_name = self.stack.name_generator(based_on='subst')
+            self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
+                    inames, rhs)
+            return self.copy(name=subst_name)
+        elif isinstance(other, ArraySymbol):
+            if not self.shape == other.shape:
+                raise NotImplementedError('At this moment broadcasting is not '
+                        'supported. But support for it will be added soon!')
+            inames = tuple(
+                   self.stack.name_generator(based_on='i') for _ in
+                   self.shape)
+            rhs = Variable(self.name)(*tuple(Variable(iname) for
+                iname in inames)) / Variable(other.name)(*tuple(Variable(iname) for
+                iname in inames))
+            subst_name = self.stack.name_generator(based_on='subst')
+            self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
+                    inames, rhs)
+            return self.copy(name=subst_name)
+        else:
+            raise NotImplementedError('__div__ for', type(other))
+
+    def __getitem__(self, index):
+        right_inames = []
+        left_inames = []
+        shape = []
+        for axis_len, idx in zip(self.shape, index):
+            if isinstance(idx, int):
+                right_inames.append(idx)
+            elif isinstance(idx, slice):
+                # right now only support complete slices
+                # future plan is to make it diverse by adding it more support
+                assert idx.start is None
+                assert idx.stop is None
+                assert idx.step is None
+                iname = self.stack.name_generator(based_on='i')
+                right_inames.append(Variable(iname))
+                left_inames.append(iname)
+                shape.append(axis_len)
+            else:
+                raise TypeError('can be subscripted only with slices or '
+                        'integers')
+
+        print(right_inames)
+
+        rhs = Call(Variable(self.name), tuple(right_inames))
+        subst_name = self.stack.name_generator(based_on='subst')
+        self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
+                    tuple(left_inames), rhs)
+
+        def _one_if_empty(t):
+            if t:
+                return t
+            else:
+                return (1, )
+
+        return ArraySymbol(stack=self.stack, name=subst_name, dtype=self.dtype,
+                shape=_one_if_empty(tuple(shape)))
+
+    __rmul__ = __mul__
+    __radd__ = __add__

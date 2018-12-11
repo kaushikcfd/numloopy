@@ -61,11 +61,14 @@ class Stack(Record):
         An instance of :class:`list` which contains the parameters
     """
     def __init__(self, domains=[], substitutions={}, parameters=[],
+            data=[], substs_to_arrays={},
             name_generator=UniqueNameGenerator()):
 
         self.domains = domains
         self.substitutions = substitutions
         self.parameters = parameters
+        self.data = data
+        self.substs_to_arrays = substs_to_arrays
 
         self.name_generator = name_generator
 
@@ -195,6 +198,29 @@ class Stack(Record):
 
         return summed_arg
 
+    def argument(self, shape, dtype=np.float64):
+        if isinstance(shape, int):
+            shape = (shape, )
+        assert isinstance(shape, tuple)
+
+        inames = tuple(
+               self.name_generator(based_on='i') for _ in
+               shape)
+
+        arg_name = self.name_generator(based_on='arr')
+
+        rhs = Subscript(Variable(arg_name),
+                tuple(Variable(iname) for iname in inames))
+        subst_name = self.name_generator(based_on='subst')
+        self.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
+                inames, rhs)
+        self.substs_to_arrays[subst_name] = arg_name
+
+        self.data.append(lp.GlobalArg(name=arg_name, shape=shape, dtype=dtype))
+
+        return ArraySymbol(stack=self, name=subst_name, dtype=dtype,
+                shape=shape)
+
     def end_computation_stack(self, variables_needed=()):
         """
         Returns an instance :class:`loopy.LoopKernel` corresponding to the
@@ -205,8 +231,8 @@ class Stack(Record):
         """
         statements = []
         domains = self.domains[:]
-        data = []
-        substs_to_arrays = {}
+        data = self.data[:]
+        substs_to_arrays = self.substs_to_arrays.copy()
         for i, arg in enumerate(variables_needed):
             substs_to_arg_mapper = SubstToArrayExapander(
                     substs_to_arrays.copy())
