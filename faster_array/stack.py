@@ -214,7 +214,7 @@ class Stack(Record):
             self.substitutions[arg.name] = rule.copy(
                     expression=substs_to_arg_mapper(rule.expression))
 
-            arg_name = self.name_generator(arg.name+'_arg')
+            arg_name = self.name_generator('arr')
             data.append(arg.copy(name=arg_name))
             substs_to_arrays[arg.name] = arg_name
             if arg.shape != (1, ):
