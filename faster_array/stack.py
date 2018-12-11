@@ -255,7 +255,8 @@ class Stack(Record):
                 kernel_data=data,
                 seq_dependencies=True,
                 lang_version=(2018, 2))
-        knl = knl.copy(substitutions=new_substitutions)
+        knl = knl.copy(substitutions=new_substitutions,
+                target=lp.CTarget())
 
         return knl
 

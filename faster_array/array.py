@@ -29,12 +29,55 @@ class ArraySymbol(lp.ArrayArg):
     def __add__(self, other):
         if isinstance(other, Number):
             inames = tuple(
-                   Variable(self.stack.name_generator(based_on='i')) for _ in
+                   self.stack.name_generator(based_on='i') for _ in
                    self.shape)
-            rhs = Call(function=self.name, parameters=inames) + other
+            rhs = Call(function=Variable(self.name),
+                    parameters=tuple(Variable(iname) for iname in inames)) + other
+            subst_name = self.stack.name_generator(based_on='subst')
+            self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
+                    inames, rhs)
+            return self.copy(name=subst_name)
+        elif isinstance(other, ArraySymbol):
+            if not self.shape == other.shape:
+                raise NotImplementedError('At this moment broadcasting is not '
+                        'supported. But support for it will be added soon!')
+            inames = tuple(
+                   self.stack.name_generator(based_on='i') for _ in
+                   self.shape)
+            rhs = Variable(self.name)(*tuple(Variable(iname) for
+                iname in inames)) + Variable(other.name)(*tuple(Variable(iname) for
+                iname in inames))
             subst_name = self.stack.name_generator(based_on='subst')
             self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
                     inames, rhs)
             return self.copy(name=subst_name)
         else:
             raise NotImplementedError('__add__ for', type(other))
+
+    def __mul__(self, other):
+        if isinstance(other, Number):
+            inames = tuple(
+                   self.stack.name_generator(based_on='i') for _ in
+                   self.shape)
+            rhs = Call(function=Variable(self.name),
+                    parameters=tuple(Variable(iname) for iname in inames)) * other
+            subst_name = self.stack.name_generator(based_on='subst')
+            self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
+                    inames, rhs)
+            return self.copy(name=subst_name)
+        elif isinstance(other, ArraySymbol):
+            if not self.shape == other.shape:
+                raise NotImplementedError('At this moment broadcasting is not '
+                        'supported. But support for it will be added soon!')
+            inames = tuple(
+                   self.stack.name_generator(based_on='i') for _ in
+                   self.shape)
+            rhs = Variable(self.name)(*tuple(Variable(iname) for
+                iname in inames)) * Variable(other.name)(*tuple(Variable(iname) for
+                iname in inames))
+            subst_name = self.stack.name_generator(based_on='subst')
+            self.stack.substitutions[subst_name] = lp.SubstitutionRule(subst_name,
+                    inames, rhs)
+            return self.copy(name=subst_name)
+        else:
+            raise NotImplementedError('__mul__ for', type(other))
