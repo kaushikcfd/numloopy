@@ -36,9 +36,13 @@ class SubstToArrayExapander(IdentityMapper):
 
     def map_call(self, expr):
         if expr.function.name in self.substs_to_args:
+            def _zero_if_none(_t):
+                if _t == ():
+                    return (0, )
+                return _t
             return Subscript(
                 Variable(self.substs_to_args[expr.function.name]),
-                tuple(self.rec(par) for par in expr.parameters))
+                _zero_if_none(tuple(self.rec(par) for par in expr.parameters)))
 
         return super(SubstToArrayExapander, self).map_call(expr)
 
@@ -267,7 +271,7 @@ class Stack(Record):
                 isl.Constraint.ineq_from_names(space, {j_iname: 1}))
         domain = domain.add_constraint(
                 isl.Constraint.ineq_from_names(space,
-                    {j_iname: -1, i_iname: 1, 1: 1}))
+                    {j_iname: -1, i_iname: 1, 1: -11}))
         cumsummed_arg = ArraySymbol(
                 stack=self,
                 name=arg_name,
@@ -332,7 +336,7 @@ class Stack(Record):
                 data.append(arg.copy(name=arg_name))
                 substs_to_arrays[arg.name] = arg_name
 
-                if arg.shape != (1, ):
+                if arg.shape != (1, ) and arg.shape != (1):
                     inames = tuple(self.name_generator(based_on='i') for _ in
                             arg.shape)
                     space = isl.Space.create_from_names(isl.DEFAULT_CONTEXT, inames)
