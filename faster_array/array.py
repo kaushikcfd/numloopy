@@ -114,7 +114,7 @@ class ArraySymbol(lp.ArrayArg):
     def __gt__(self, other):
         return self._arithmetic_op(other, '>')
 
-    def __setitem(self, index, value):
+    def __setitem__(self, index, value):
         if isinstance(index, Number):
             index = (index, )
         assert isinstance(index, tuple)

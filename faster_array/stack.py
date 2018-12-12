@@ -261,51 +261,50 @@ class Stack(Record):
         domains = self.domains[:]
         data = self.data[:]
         substitutions = {}
-        for rule in self.registered_substitutions:
-            substitutions[rule.name] = rule
+        substitutions_needed = [array_sym.name for array_sym in
+                variables_needed]
 
         substs_to_arrays = self.substs_to_arrays.copy()
-        for i, arg in enumerate(variables_needed):
+
+        for i, rule in enumerate(self.registered_substitutions):
             substs_to_arg_mapper = SubstToArrayExapander(
                     substs_to_arrays.copy())
-            rule = self.get_substitution(arg.name)
-            substitutions[arg.name] = rule.copy(
-                    expression=substs_to_arg_mapper(rule.expression))
-
-            arg_name = self.name_generator('arr')
-            data.append(arg.copy(name=arg_name))
-            substs_to_arrays[arg.name] = arg_name
-            if arg.shape != (1, ):
-                inames = tuple(self.name_generator(based_on='i') for _ in arg.shape)
-                space = isl.Space.create_from_names(isl.DEFAULT_CONTEXT, inames)
-                domain = isl.BasicSet.universe(space)
-
-                for iname_name, axis_length in zip(inames, arg.shape):
-                    domain &= make_slab(space, iname_name, 0, axis_length)
-
-                assignee = parse('{}[{}]'.format(arg_name,
-                    ', '.join(inames)))
-                stmnt = lp.Assignment(assignee=assignee,
-                        expression=parse('{}({})'.format(arg.name,
-                            ', '.join(inames))))
-                domains.append(domain)
-            else:
-                assignee = parse('{}[0]'.format(arg_name))
-                stmnt = lp.Assignment(assignee=assignee,
-                        expression=parse('{}()'.format(arg.name)))
-            statements.append(stmnt.with_transformed_expressions(
-                substs_to_arg_mapper))
-
-        new_substitutions = {}
-        substs_to_arg_mapper = SubstToArrayExapander(
-                substs_to_arrays.copy())
-
-        for name, rule in substitutions.items():
-            if name not in substs_to_arrays:
-                new_substitutions[name] = rule.copy(
+            statements.extend([insn.with_transformed_expresssion(
+                substs_to_arg_mapper) for insn in
+                self.implicit_assignments.pop(i, [])])
+            if rule.name in substitutions_needed:
+                rule = rule.copy(
                         expression=substs_to_arg_mapper(rule.expression))
-            else:
-                new_substitutions[name] = rule
+                arg_name = self.name_generator(based_on="arr")
+                arg = variables_needed[
+                        substitutions_needed.index(rule.name)]
+                data.append(arg.copy(name=arg_name))
+                substs_to_arrays[arg.name] = arg_name
+
+                if arg.shape != (1, ):
+                    inames = tuple(self.name_generator(based_on='i') for _ in
+                            arg.shape)
+                    space = isl.Space.create_from_names(isl.DEFAULT_CONTEXT, inames)
+                    domain = isl.BasicSet.universe(space)
+
+                    for iname_name, axis_length in zip(inames, arg.shape):
+                        domain &= make_slab(space, iname_name, 0, axis_length)
+
+                    assignee = parse('{}[{}]'.format(arg_name,
+                        ', '.join(inames)))
+                    stmnt = lp.Assignment(assignee=assignee,
+                            expression=parse('{}({})'.format(arg.name,
+                                ', '.join(inames))))
+                    domains.append(domain)
+                else:
+                    assignee = parse('{}[0]'.format(arg_name))
+                    stmnt = lp.Assignment(assignee=assignee,
+                            expression=parse('{}()'.format(arg.name)))
+                statements.append(stmnt.with_transformed_expressions(
+                    substs_to_arg_mapper))
+
+            substitutions[rule.name] = rule.copy(
+                    expression=substs_to_arg_mapper(rule.expression))
 
         knl = lp.make_kernel(
                 domains=domains,
@@ -313,7 +312,7 @@ class Stack(Record):
                 kernel_data=data,
                 seq_dependencies=True,
                 lang_version=(2018, 2))
-        knl = knl.copy(substitutions=new_substitutions,
+        knl = knl.copy(substitutions=substitutions,
                 target=lp.CTarget())
 
         return knl
