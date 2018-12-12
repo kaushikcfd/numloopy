@@ -139,6 +139,22 @@ class Stack(Record):
 
         return arg
 
+    def arange(self, stop):
+        assert isinstance(stop, int)
+        subst_name = self.name_generator(based_on="subst")
+        arg = ArraySymbol(
+                stack=self,
+                name=subst_name,
+                shape=(stop, ),
+                dtype=np.int)
+        iname = self.name_generator(based_on="i")
+        rhs = Variable(iname)
+        rule = lp.SubstitutionRule(subst_name, (iname, ), rhs)
+
+        self.register_substitution(rule)
+
+        return arg
+
     def ones(self, shape, dtype=np.float64):
         """
         Adds statements and domains to initialize an array to 1.
@@ -271,7 +287,7 @@ class Stack(Record):
                 isl.Constraint.ineq_from_names(space, {j_iname: 1}))
         domain = domain.add_constraint(
                 isl.Constraint.ineq_from_names(space,
-                    {j_iname: -1, i_iname: 1, 1: -11}))
+                    {j_iname: -1, i_iname: 1, 1: -1}))
         cumsummed_arg = ArraySymbol(
                 stack=self,
                 name=arg_name,
@@ -304,7 +320,7 @@ class Stack(Record):
         self.register_substitution(rule)
         return cumsummed_subst
 
-    def end_computation_stack(self, variables_needed=()):
+    def end_computation_stack(self, evaluate=()):
         """
         Returns an instance :class:`loopy.LoopKernel` corresponding to the
         computations pushed in the computation stack.
@@ -317,7 +333,7 @@ class Stack(Record):
         data = self.data[:]
         substitutions = {}
         substitutions_needed = [array_sym.name for array_sym in
-                variables_needed if array_sym.name not in self.substs_to_arrays]
+                evaluate if array_sym.name not in self.substs_to_arrays]
 
         substs_to_arrays = self.substs_to_arrays.copy()
 
@@ -331,7 +347,7 @@ class Stack(Record):
                 rule = rule.copy(
                         expression=substs_to_arg_mapper(rule.expression))
                 arg_name = self.name_generator(based_on="arr")
-                arg = variables_needed[
+                arg = evaluate[
                         substitutions_needed.index(rule.name)]
                 data.append(arg.copy(name=arg_name))
                 substs_to_arrays[arg.name] = arg_name
