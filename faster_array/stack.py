@@ -320,7 +320,7 @@ class Stack(Record):
         self.register_substitution(rule)
         return cumsummed_subst
 
-    def end_computation_stack(self, evaluate=()):
+    def end_computation_stack(self, evaluate=(), transform=False):
         """
         Returns an instance :class:`loopy.LoopKernel` corresponding to the
         computations pushed in the computation stack.
@@ -329,6 +329,7 @@ class Stack(Record):
         that must be computed
         """
         statements = []
+        tf_data = {}
         domains = self.domains[:]
         data = self.data[:]
         substitutions = {}
@@ -367,10 +368,12 @@ class Stack(Record):
                             expression=parse('{}({})'.format(arg.name,
                                 ', '.join(inames))))
                     domains.append(domain)
+                    tf_data[arg.name] = inames
                 else:
                     assignee = parse('{}[0]'.format(arg_name))
                     stmnt = lp.Assignment(assignee=assignee,
                             expression=parse('{}()'.format(arg.name)))
+                    tf_data[arg.name] = ()
                 statements.append(stmnt.with_transformed_expressions(
                     substs_to_arg_mapper))
 
@@ -392,8 +395,10 @@ class Stack(Record):
                 lang_version=(2018, 2))
         knl = knl.copy(substitutions=substitutions,
                 target=lp.CTarget())
-
-        return knl
+        if transform:
+            return knl, tf_data
+        else:
+            return knl
 
 
 def begin_computation_stack():
