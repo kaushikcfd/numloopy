@@ -128,9 +128,8 @@ class ArraySymbol(lp.ArrayArg):
             inames = tuple(self.stack.name_generator(based_on="i") for _ in
                     self.shape)
             arg_name = self.stack.name_generator(based_on="arr")
-            self.stack.substs_to_arrays[self.name] = arg_name
-            insn = lp.Assignment(assignee=parse('{}[]'.format(arg_name, ','
-                .join(inames))), expression=parse('{}()'.format(self.name, ','
+            insn = lp.Assignment(assignee=parse('{}[{}]'.format(arg_name, ', '
+                .join(inames))), expression=parse('{}({})'.format(self.name, ', '
                     .join(inames))))
             self.stack.register_implicit_assignment(insn)
 
@@ -144,17 +143,21 @@ class ArraySymbol(lp.ArrayArg):
 
         # now handling the second assignment
 
-        inames, iname_lens = zip(
-                *tuple((self.stack.name_generator(based_on="i"), axis_len) for
-                idx, axis_len in zip(index, self.shape)
-                if isinstance(idx, slice)))
-        space = isl.Space.create_from_names(isl.DEFAULT_CONTEXT, inames)
-        domain = isl.BasicSet.universe(space)
+        try:
+            inames, iname_lens = zip(
+                    *tuple((self.stack.name_generator(based_on="i"), axis_len) for
+                    idx, axis_len in zip(index, self.shape)
+                    if isinstance(idx, slice)))
+            space = isl.Space.create_from_names(isl.DEFAULT_CONTEXT, inames)
+            domain = isl.BasicSet.universe(space)
 
-        for iname_name, axis_length in zip(inames, iname_lens):
-            domain &= make_slab(space, iname_name, 0, axis_length)
+            for iname_name, axis_length in zip(inames, iname_lens):
+                domain &= make_slab(space, iname_name, 0, axis_length)
 
-        self.stack.domains.append(domain)
+            self.stack.domains.append(domain)
+        except ValueError:
+            inames = ()
+            iname_lens = ()
 
         indices = []
         _k = 0
@@ -167,20 +170,29 @@ class ArraySymbol(lp.ArrayArg):
         assert _k == len(inames)
         indices = tuple(indices)
 
-        insn = lp.Assignment(assignee=Subscript(Variable(arg_name), indices),
-                expression='{}()'.format(value.name, ', '.join(Variable(iname)
-                    for iname in inames)))
+        if isinstance(value, ArraySymbol):
+            insn = lp.Assignment(assignee=Subscript(Variable(arg_name), indices),
+                    expression='{}({})'.format(value.name, ', '.join(Variable(iname)
+                        for iname in inames)))
+        elif isinstance(value, Number):
+            insn = lp.Assignment(assignee=Subscript(Variable(arg_name), indices),
+                    expression=value)
+        else:
+            raise TypeError("arrays can be only assigned with number or other "
+                    "arrays")
         self.stack.register_implicit_assignment(insn)
-        subst_name = self.stack.name_generator(based_on="subst")
-        inames = tuple(self.stack.name_generator(based_on='i') for _ in
-                self.shape)
-        rule = lp.SubstitutionRule(subst_name, inames,
-                expression=parse(Subscript(Variable(arg_name),
-                    tuple(Variable(iname) for iname in inames))))
-        self.stack.register_substitution(rule)
+        if self.name not in self.stack.substs_to_arrays:
+            subst_name = self.stack.name_generator(based_on="subst")
+            inames = tuple(self.stack.name_generator(based_on='i') for _ in
+                    self.shape)
+            rule = lp.SubstitutionRule(subst_name, inames,
+                    expression=Subscript(Variable(arg_name),
+                        tuple(Variable(iname) for iname in inames)))
+            self.stack.register_substitution(rule)
+            self.stack.data.append(self.copy(name=arg_name))
 
-        self.stack.substs_to_arrays[subst_name] = arg_name
-        self.name = subst_name
+            self.stack.substs_to_arrays[subst_name] = arg_name
+            self.name = subst_name
 
     def __getitem__(self, index):
         if isinstance(index, Number):

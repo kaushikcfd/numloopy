@@ -262,14 +262,17 @@ class Stack(Record):
         data = self.data[:]
         substitutions = {}
         substitutions_needed = [array_sym.name for array_sym in
-                variables_needed]
+                variables_needed if array_sym.name not in self.substs_to_arrays]
+
+        assert len(substitutions_needed) + len(self.substs_to_arrays) == (
+                len(variables_needed))
 
         substs_to_arrays = self.substs_to_arrays.copy()
 
         for i, rule in enumerate(self.registered_substitutions):
             substs_to_arg_mapper = SubstToArrayExapander(
                     substs_to_arrays.copy())
-            statements.extend([insn.with_transformed_expresssion(
+            statements.extend([insn.with_transformed_expressions(
                 substs_to_arg_mapper) for insn in
                 self.implicit_assignments.pop(i, [])])
             if rule.name in substitutions_needed:
@@ -305,6 +308,10 @@ class Stack(Record):
 
             substitutions[rule.name] = rule.copy(
                     expression=substs_to_arg_mapper(rule.expression))
+
+        statements.extend([insn.with_transformed_expressions(
+            substs_to_arg_mapper) for insn in
+            self.implicit_assignments.pop(i+1, [])])
 
         knl = lp.make_kernel(
                 domains=domains,
