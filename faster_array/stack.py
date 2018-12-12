@@ -61,6 +61,7 @@ class Stack(Record):
         An instance of :class:`list` which contains the parameters
     """
     def __init__(self, domains=[], registered_substitutions=[], parameters=[],
+            implicit_assignments={},
             data=[], substs_to_arrays={}, stack_compute_num=0,
             name_generator=UniqueNameGenerator()):
 
@@ -69,6 +70,7 @@ class Stack(Record):
         self.data = data
         self.substs_to_arrays = substs_to_arrays
         self.registered_substitutions = registered_substitutions
+        self.implicit_assignments = implicit_assignments
 
         self.name_generator = name_generator
 
@@ -76,6 +78,19 @@ class Stack(Record):
         assert isinstance(rule, lp.SubstitutionRule)
 
         self.registered_substitutions.append(rule)
+
+    def register_implicit_assignment(self, insn):
+        # current data representation for implicit assignments
+        # make note of the length of:
+        # implicit_assignment[int] = [assign1, assign2, ...]
+        # all these assingments should be made before dereferencing any other
+        # substitution of value int+1
+
+        assignments_till_now = self.implicit_assignments.pop(
+            len(self.registered_substitutions), [])[:]
+        assignments_till_now.append(insn)
+        self.implicit_assignments[len(self.registered_substitutions)] = (
+                assignments_till_now)
 
     @memoize_method
     def get_substitution(self, name):
