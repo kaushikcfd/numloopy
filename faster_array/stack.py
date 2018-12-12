@@ -249,6 +249,57 @@ class Stack(Record):
         return ArraySymbol(stack=self, name=subst_name, dtype=dtype,
                 shape=shape)
 
+    def cumsum(self, arg):
+        # Note: this can remain as a substitution but loopy does not have
+        # support for translating inames for substitutions to the kernel
+        # domains
+        assert len(arg.shape) == 1
+        i_iname = self.name_generator(based_on="i")
+        j_iname = self.name_generator(based_on="i")
+
+        space = isl.Space.create_from_names(isl.DEFAULT_CONTEXT, [i_iname,
+            j_iname])
+        domain = isl.BasicSet.universe(space)
+        arg_name = self.name_generator(based_on="arr")
+        subst_name = self.name_generator(based_on="subst")
+        domain = domain & make_slab(space, i_iname, 0, arg.shape[0])
+        domain = domain.add_constraint(
+                isl.Constraint.ineq_from_names(space, {j_iname: 1}))
+        domain = domain.add_constraint(
+                isl.Constraint.ineq_from_names(space,
+                    {j_iname: -1, i_iname: 1, 1: 1}))
+        cumsummed_arg = ArraySymbol(
+                stack=self,
+                name=arg_name,
+                shape=arg.shape,
+                dtype=arg.dtype)
+        cumsummed_subst = ArraySymbol(
+                stack=self,
+                name=subst_name,
+                shape=arg.shape,
+                dtype=arg.dtype)
+        subst_iname = self.name_generator(based_on="i")
+        rule = lp.SubstitutionRule(
+                subst_name, (subst_iname,), Subscript(Variable(arg_name),
+                    (Variable(subst_iname), )))
+
+        from loopy.library.reduction import SumReductionOperation
+
+        insn = lp.Assignment(
+                assignee=Subscript(Variable(arg_name), (Variable(i_iname), )),
+                expression=lp.Reduction(
+                    SumReductionOperation(),
+                    (j_iname, ),
+                    parse('{}({})'.format(arg.name,
+                        j_iname))))
+        self.data.append(cumsummed_arg)
+        self.substs_to_arrays[subst_name] = arg_name
+        self.register_implicit_assignment(insn)
+        self.domains.append(domain)
+
+        self.register_substitution(rule)
+        return cumsummed_subst
+
     def end_computation_stack(self, variables_needed=()):
         """
         Returns an instance :class:`loopy.LoopKernel` corresponding to the
