@@ -264,9 +264,6 @@ class Stack(Record):
         substitutions_needed = [array_sym.name for array_sym in
                 variables_needed if array_sym.name not in self.substs_to_arrays]
 
-        assert len(substitutions_needed) + len(self.substs_to_arrays) == (
-                len(variables_needed))
-
         substs_to_arrays = self.substs_to_arrays.copy()
 
         for i, rule in enumerate(self.registered_substitutions):
