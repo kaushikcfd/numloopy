@@ -115,7 +115,7 @@ class ArraySymbol(lp.ArrayArg):
         return self._arithmetic_op(other, '>')
 
     def __setitem__(self, index, value):
-        if isinstance(index, Number):
+        if isinstance(index, (Number, slice, ArraySymbol)):
             index = (index, )
         assert isinstance(index, tuple)
 
@@ -147,7 +147,7 @@ class ArraySymbol(lp.ArrayArg):
             inames, iname_lens = zip(
                     *tuple((self.stack.name_generator(based_on="i"), axis_len) for
                     idx, axis_len in zip(index, self.shape)
-                    if isinstance(idx, slice)))
+                    if isinstance(idx, slice) or isinstance(idx, ArraySymbol)))
             space = isl.Space.create_from_names(isl.DEFAULT_CONTEXT, inames)
             domain = isl.BasicSet.universe(space)
 
@@ -165,6 +165,9 @@ class ArraySymbol(lp.ArrayArg):
             if isinstance(idx, slice):
                 indices.append(Variable(inames[_k]))
                 _k += 1
+            elif isinstance(idx, ArraySymbol):
+                indices.append(Variable(idx.name)(Variable(inames[_k])))
+                _k += 1
             else:
                 indices.append(idx)
         assert _k == len(inames)
@@ -172,7 +175,7 @@ class ArraySymbol(lp.ArrayArg):
 
         if isinstance(value, ArraySymbol):
             insn = lp.Assignment(assignee=Subscript(Variable(arg_name), indices),
-                    expression='{}({})'.format(value.name, ', '.join(Variable(iname)
+                    expression='{}({})'.format(value.name, ', '.join(str(iname)
                         for iname in inames)))
         elif isinstance(value, Number):
             insn = lp.Assignment(assignee=Subscript(Variable(arg_name), indices),

@@ -345,8 +345,8 @@ class Stack(Record):
                     for iname_name, axis_length in zip(inames, arg.shape):
                         domain &= make_slab(space, iname_name, 0, axis_length)
 
-                    assignee = parse('{}[{}]'.format(arg_name,
-                        ', '.join(inames)))
+                    assignee = substs_to_arg_mapper(parse('{}[{}]'.format(arg_name,
+                        ', '.join(inames))))
                     stmnt = lp.Assignment(assignee=assignee,
                             expression=parse('{}({})'.format(arg.name,
                                 ', '.join(inames))))
@@ -360,6 +360,9 @@ class Stack(Record):
 
             substitutions[rule.name] = rule.copy(
                     expression=substs_to_arg_mapper(rule.expression))
+
+        substs_to_arg_mapper = SubstToArrayExapander(
+                substs_to_arrays.copy())
 
         statements.extend([insn.with_transformed_expressions(
             substs_to_arg_mapper) for insn in
