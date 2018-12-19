@@ -112,13 +112,20 @@ class ArraySymbol(lp.ArrayArg):
 
                 new_shape = tuple(new_shape)
 
-                if new_left_shape != left.shape:
+                if new_shape != left.shape:
                     subst_name = self.stack.name_generator(based_on="subst")
                     inames = tuple(self.stack.name_generator(based_on="i") for
                             _ in new_left_shape)
-                    indices = tuple(Variable(iname) if axis_len != 1 else 0 for
+
+                    def _empty_if_zero(_idx):
+                        if _idx == (0, ):
+                            return ()
+                        return _idx
+
+                    indices = _empty_if_zero(
+                            tuple(Variable(iname) if axis_len != 1 else 0 for
                             iname, axis_len in zip(inames[-len(left.shape):],
-                                left.shape))
+                                left.shape)))
                     rule = lp.SubstitutionRule(left.name,
                             inames,
                             Variable(left.name)(*indices))
@@ -128,13 +135,20 @@ class ArraySymbol(lp.ArrayArg):
                 else:
                     new_left = left
 
-                if new_right_shape != right.shape:
+                if new_shape != right.shape:
                     subst_name = self.stack.name_generator(based_on="subst")
                     inames = tuple(self.stack.name_generator(based_on="i") for
                             _ in new_right_shape)
-                    indices = tuple(Variable(iname) if axis_len != 1 else 0 for
+
+                    def _empty_if_zero(_idx):
+                        if _idx == (0, ):
+                            return ()
+                        return _idx
+
+                    indices = _empty_if_zero(
+                            tuple(Variable(iname) if axis_len != 1 else 0 for
                             iname, axis_len in zip(inames[-len(right.shape):],
-                                right.shape))
+                                right.shape)))
                     rule = lp.SubstitutionRule(subst_name,
                             inames,
                             Variable(right.name)(*indices))
