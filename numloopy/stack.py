@@ -2,7 +2,7 @@ import loopy as lp
 import numpy as np
 import islpy as isl
 from loopy.symbolic import IdentityMapper
-from faster_array.array import ArraySymbol
+from numloopy.array import ArraySymbol
 from pytools import UniqueNameGenerator, Record, memoize_method
 from pymbolic import parse
 from pymbolic.primitives import Variable, Subscript

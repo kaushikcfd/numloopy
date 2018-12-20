@@ -4,15 +4,15 @@
 from setuptools import setup, find_packages
 
 ver_dic = {}
-version_file = open("faster_array/version.py")
+version_file = open("numloopy/version.py")
 try:
     version_file_contents = version_file.read()
 finally:
     version_file.close()
 
-exec(compile(version_file_contents, "faster_array/version.py", 'exec'), ver_dic)
+exec(compile(version_file_contents, "numloopy/version.py", 'exec'), ver_dic)
 
-setup(name="faster_array",
+setup(name="numloopy",
       version="2017.1",
       description="Lazy evaluation for array expressions, based on loopy",
       long_description=open("README.rst").read(),
@@ -44,8 +44,7 @@ setup(name="faster_array",
           "numpy>=1.6.0",
           ],
 
-      author="How Yadoin",
-      # url="http://pypi.python.org/pypi/pytools",
+      author="Kaushik Kulkarni",
       author_email="kgk2@illinois.edu",
       license="MIT",
       packages=find_packages())

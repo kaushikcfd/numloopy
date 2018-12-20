@@ -10,7 +10,7 @@ from loopy.isl_helpers import make_slab, simplify_via_aff
 class ArraySymbol(lp.ArrayArg):
     __doc__ = lp.ArrayArg.__doc__ + (
             """
-            :attribute stack: An instance of :class:`faster_array.Stack`
+            :attribute stack: An instance of :class:`numloopy.Stack`
             """)
     allowed_extra_kwargs = [
             "address_space",

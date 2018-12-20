@@ -1,7 +1,7 @@
-import faster_array as f_ray
+import numloopy as nplp
 import loopy as lp
 
-np = f_ray.begin_computation_stack()
+np = nplp.begin_computation_stack()
 
 x = np.argument((1000, 2))
 x_new = np.argument((1000, 2))

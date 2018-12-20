@@ -1,7 +1,7 @@
-import faster_array
+import numloopy as nplp
 import loopy as lp
 
-np = faster_array.begin_computation_stack()
+np = nplp.begin_computation_stack()
 
 a = np.ones(10)
 b = np.arange(10)

@@ -1,7 +1,7 @@
 import loopy as lp
-import faster_array as f_ray
+import numloopy as nplp
 
-np = f_ray.begin_computation_stack()
+np = nplp.begin_computation_stack()
 
 a = np.arange(8)
 b = a.reshape((2, 4), order='F')

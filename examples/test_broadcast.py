@@ -1,7 +1,7 @@
 import loopy as lp
-import faster_array as f_ray
+import numloopy as nplp
 
-np = f_ray.begin_computation_stack()
+np = nplp.begin_computation_stack()
 
 A = np.arange(9).reshape((3, 3))
 x = np.arange(3)
