@@ -1,2 +1,2 @@
 numpy
-git+https://gitlab.tiker.net/inducer/loopy.git
+git+https://github.com/inducer/loopy.git
