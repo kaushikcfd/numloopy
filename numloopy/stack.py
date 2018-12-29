@@ -10,17 +10,18 @@ from loopy.isl_helpers import make_slab
 from numbers import Number
 
 
-# space = isl.Space.create_from_names(isl.DEFAULT_CONTEXT, iname_names)
-# domain = isl.BasicSet.universe(space)
-
-# for iname_name, axis_length in zip(iname_names, arg.shape):
-#     domain &= make_slab(space, iname_name, 0, axis_length)
-
-# assignee = parse('{}[{}]'.format(arg.name,
-#     ', '.join(iname_names)))
-# stmnt = lp.Assignment(assignee=assignee, expression=value)
-
 def fill_array(shape, value, name_generator):
+    """
+    Helper function to fill an array of shape ``shape`` with ``value`` .
+
+    :arg shape: An instance of :class:`tuple` denoting the shape of the array.
+    :arg value: The value with the array should be filled.
+    :arg name_generator: An instance of :class:`pytools.UniqueNameGenerator`,
+        for generating the name of the new array.
+
+    :return: A tuple of the name of the subtitution, the substitution rule and
+        the modified name generator.
+    """
     inames = tuple(name_generator(based_on='i') for _ in shape)
 
     rhs = value
@@ -31,6 +32,15 @@ def fill_array(shape, value, name_generator):
 
 
 class SubstToArrayExapander(IdentityMapper):
+    """
+    Mapper to change the substitution calls in :attr:`subst_to_args` to array
+    instances.
+
+    .. attribute substs_to_args::
+
+        A mapping from substitution rules to arguments which needs to be
+        represented as arrays.
+    """
     def __init__(self, substs_to_args):
         self.substs_to_args = substs_to_args
 
@@ -51,26 +61,45 @@ class Stack(Record):
     """
     Records the information about the computation stack.
 
+    .. attribute domains::
+
+        An instance of :class:`list` representing the domains of the ``inames``
+        used in :attr:`implicit_assignments`.
+
+    .. attribute registered_substitutions::
+
+        A mapping from an instance of :class:`str`(name of the substitution) to
+        an instance of :class:`SubstitutionRule`. Similar to
+        :attr:`loop.LoopKernel.substitutions`.
+
+
     .. attribute name_generator::
 
         An instance of :class:`pytools.UniqueNameGenerator`.
 
-    .. attribute substitutions::
+    .. attribute implicit_assignments
 
-        A mapping from an instance of :class:`str`(name of the substitution) to
-        an instance of :class:`SubstitutionRule`.
+        A mapping from scheduled number to instance of
+        :class:`loopy.Assignment` which denote the instruction to be flushed
+        before at schedule number.
 
-    .. attribute parameters::
+    .. attribute data::
 
-        An instance of :class:`list` which contains the parameters
+        An instance of :class:`list` containing the data created due to
+        :attr:`implicit_assignments`.
+
+    .. attribute substs_to_arrays::
+
+        A mapping from from substitution names to arrays that are equivalently
+        used.
+
     """
-    def __init__(self, domains=[], registered_substitutions=[], parameters=[],
+    def __init__(self, domains=[], registered_substitutions=[],
             implicit_assignments={},
-            data=[], substs_to_arrays={}, stack_compute_num=0,
+            data=[], substs_to_arrays={},
             name_generator=UniqueNameGenerator()):
 
         self.domains = domains
-        self.parameters = parameters
         self.data = data
         self.substs_to_arrays = substs_to_arrays
         self.registered_substitutions = registered_substitutions
@@ -79,14 +108,21 @@ class Stack(Record):
         self.name_generator = name_generator
 
     def register_substitution(self, rule):
+        """
+        Registers a substitution rule on the top of the stack.
+
+        :arg rule: An instance of :class:`loopy.SubstitutionRule`.
+        """
         assert isinstance(rule, lp.SubstitutionRule)
 
         self.registered_substitutions.append(rule)
 
     def register_implicit_assignment(self, insn):
-        # current data representation for implicit assignments
-        # make note of the length of:
-        # implicit_assignment[int] = [assign1, assign2, ...]
+        """
+        Registers an instruction ``insn`` at the top of the stack.
+        """
+        # representation of implicit_assignment
+        # implicit_assignment[int] = [insn1, insn2, ...]
         # all these assingments should be made before dereferencing any other
         # substitution of value int+1
 
@@ -98,6 +134,15 @@ class Stack(Record):
 
     @memoize_method
     def get_substitution(self, name):
+        """
+        Returns the substiution rule corresponding to the substitution
+        registered with the name ``name``.
+
+        :arg name: An instance of :class:`str`.
+
+        :return: An instance of :class:`loopy.SubstitutionRule` registered
+            with the name ``name``.
+        """
         for rule in self.registered_substitutions:
             if rule.name == name:
                 return rule
@@ -106,10 +151,11 @@ class Stack(Record):
 
     def zeros(self, shape, dtype=np.float64):
         """
-        Adds statements and domains to initialize an array to 0.
+        Registers a substitution rule on to the stack with an array whose values
+        are filled with 0.
 
         :return: An instance of :class:`loopy.ArraySymbol`, corresponding to the
-            array which and created and initialized to 0.
+            substitution rule which was registered.
         """
         if isinstance(shape, int):
             shape = (shape, )
@@ -139,28 +185,13 @@ class Stack(Record):
 
         return arg
 
-    def arange(self, stop):
-        assert isinstance(stop, int)
-        subst_name = self.name_generator(based_on="subst")
-        arg = ArraySymbol(
-                stack=self,
-                name=subst_name,
-                shape=(stop, ),
-                dtype=np.int)
-        iname = self.name_generator(based_on="i")
-        rhs = Variable(iname)
-        rule = lp.SubstitutionRule(subst_name, (iname, ), rhs)
-
-        self.register_substitution(rule)
-
-        return arg
-
     def ones(self, shape, dtype=np.float64):
         """
-        Adds statements and domains to initialize an array to 1.
+        Registers a substitution rule on to the stack with an array whose values
+        are filled with 1.
 
         :return: An instance of :class:`loopy.ArraySymbol`, corresponding to the
-            array which and created and initialized to 0.
+            substitution rule which was registered.
         """
 
         if isinstance(shape, int):
@@ -191,9 +222,40 @@ class Stack(Record):
 
         return arg
 
+    def arange(self, stop):
+        """
+        Registers a substitution rule on to the stack with an array whose values
+        are filled equivalent to ``numpy.arange``.
+
+        :arg stop: An instance of :class:`int` denoting the extent of the
+        array.
+
+        :return: An instance of :class:`numloopy.ArraySymbol` of shape
+        ``(stop,)``, corresponding to the substitution rule which was
+        registered.
+        """
+        assert isinstance(stop, int)
+        subst_name = self.name_generator(based_on="subst")
+        arg = ArraySymbol(
+                stack=self,
+                name=subst_name,
+                shape=(stop, ),
+                dtype=np.int)
+        iname = self.name_generator(based_on="i")
+        rhs = Variable(iname)
+        rule = lp.SubstitutionRule(subst_name, (iname, ), rhs)
+
+        self.register_substitution(rule)
+
+        return arg
+
     def sum(self, arg, axis=None):
         """
-        Sums all the elements of the elements according to the axis.
+        Registers  a substitution rule in order to sum the elements of array
+        ``arg`` along ``axis``.
+
+        :return: An instance of :class:`numloopy.ArraySymbol` which is
+            which is registered as the sum-substitution rule.
         """
         if isinstance(axis, int):
             axis = (axis, )
@@ -247,6 +309,10 @@ class Stack(Record):
         return summed_arg
 
     def argument(self, shape, dtype=np.float64):
+        """
+        Return an instance of :class:`numloopy.ArraySymbol` which the loop
+        kernel expects as an input argument.
+        """
         if isinstance(shape, int):
             shape = (shape, )
         assert isinstance(shape, tuple)
@@ -270,6 +336,13 @@ class Stack(Record):
                 shape=shape)
 
     def cumsum(self, arg):
+        """
+        Registers  a substitution rule in order to cumulatively sum the
+        elements of array ``arg`` along ``axis``. Mimics :func:`numpy.cumsum`.
+
+        :return: An instance of :class:`numloopy.ArraySymbol` which is
+            which is registered as the cumulative summed-substitution rule.
+        """
         # Note: this can remain as a substitution but loopy does not have
         # support for translating inames for substitutions to the kernel
         # domains
@@ -403,6 +476,6 @@ class Stack(Record):
 
 def begin_computation_stack():
     """
-    Must be called to initialize a copmutational stack.
+    Must be called to initialize a computational stack.
     """
     return Stack()

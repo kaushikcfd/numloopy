@@ -35,6 +35,14 @@ class ArraySymbol(lp.ArrayArg):
         super(ArraySymbol, self).__init__(*args, **kwargs)
 
     def _arithmetic_op(self, other, op):
+        """
+        Registers a substitution rule that performs ``(self) op (other)``
+        element-wise for the arrays. :mod:`numpy: broadcasting rules are
+        followed while performing these operations.
+
+        :return: An instance of :class:`ArraySymbol` corresponding to the
+            registered substitution for the element-wise operation.
+        """
         assert op in ['+', '-', '*', '/', '<', '<=', '>', '>=']
 
         def _apply_op(var1, var2):
@@ -185,11 +193,21 @@ class ArraySymbol(lp.ArrayArg):
         return self._arithmetic_op(other, '>')
 
     def __setitem__(self, index, value):
+        """
+        Registers an assignment in order to make the indices represented by
+        ``index`` to ``value``.
+
+        :arg index: An instance of :class:`int`, or :class:`slice` or
+            :class:`numloopy.ArraySymbol`.
+
+        :arg value: An instance of :class:`numloopy.ArraySymbol`, with the same
+            shape as represented by ``index``.
+        """
         if isinstance(index, (Number, slice, ArraySymbol)):
             index = (index, )
         assert isinstance(index, tuple)
 
-        # current algorithm: assumes that the dereferenced guys are
+        # current heuristic: assumes that the dereferenced guys are
         # always arguments and not temporary variables, maybe  we need to fix
         # this later?
         try:
@@ -268,6 +286,13 @@ class ArraySymbol(lp.ArrayArg):
             self.name = subst_name
 
     def reshape(self, new_shape, order='C'):
+        """
+        Registers a substitution rule to reshape array with the shape
+        ``new_shape``. Mimics :func:`numpy.ndarray.reshape`.
+
+        :arg new_shape: An instance of :class:`tuple` of :class:`int`.
+        :arg order: Either 'C' or 'F'
+        """
         # need an error here complain if there is a shape mismatch
         # how to do this:
         # look at how loopy sets its dim tags, from shape and order.
@@ -311,6 +336,12 @@ class ArraySymbol(lp.ArrayArg):
         return ArraySymbol(stack=self.stack, name=subst_name, shape=new_shape)
 
     def __getitem__(self, index):
+        """
+        Registers a substitution rule pointing to the indices through `index`.
+
+        :arg index: An instance of :class:`tuple` of int, slices or
+            :class:`ArraySymbol`.
+        """
         if isinstance(index, Number):
             index = (index, )
         assert isinstance(index, tuple)
