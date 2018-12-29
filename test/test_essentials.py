@@ -3,6 +3,22 @@ import numpy
 import pyopencl as cl
 import numloopy as nplp
 
+try:
+    import faulthandler
+except ImportError:
+    pass
+else:
+    faulthandler.enable()
+
+from pyopencl.tools import pytest_generate_tests_for_pyopencl \
+        as pytest_generate_tests
+
+
+__all__ = [
+        "pytest_generate_tests",
+        "cl"  # 'cl.create_some_context'
+        ]
+
 
 def test_reshape(ctx_factory):
     ctx = ctx_factory()

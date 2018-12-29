@@ -4,6 +4,22 @@ import loopy as lp
 import pyopencl as cl
 import numloopy as nplp
 
+try:
+    import faulthandler
+except ImportError:
+    pass
+else:
+    faulthandler.enable()
+
+from pyopencl.tools import pytest_generate_tests_for_pyopencl \
+        as pytest_generate_tests
+
+
+__all__ = [
+        "pytest_generate_tests",
+        "cl"  # 'cl.create_some_context'
+        ]
+
 
 def test_axpy_like(ctx_factory):
     ctx = ctx_factory()
@@ -78,11 +94,11 @@ def test_qudrant_splitting(ctx_factory):
 
         return out_dict[x_new.name].get()
 
-    def func_np():
+    def func_np(x_in):
         import numpy as np
 
-        x = np.argument((1000, 2))
-        x_new = np.argument((1000, 2))
+        x = x_in
+        x_new = np.empty_like(x)
 
         midpoint = np.sum(x, axis=0)/x.shape[0]
 
@@ -108,8 +124,9 @@ def test_qudrant_splitting(ctx_factory):
 
         return x_new
 
-    nplp_xnew = func_np()
-    np_xnew, np_c = func_np()
+    x = numpy.random.randn(1000, 2)
+    nplp_xnew = func_np(x)
+    np_xnew = func_np(x)
 
     assert numpy.allclose(np_xnew, nplp_xnew)
 
