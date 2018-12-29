@@ -37,7 +37,7 @@ setup(name="numloopy",
           ],
 
       install_requires=[
-          "loo.py>=2018.2",
+          "loo.py>=2018.1",
           "numpy>=1.6.0",
           ],
       dependency_links=[

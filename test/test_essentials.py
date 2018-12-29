@@ -2,6 +2,7 @@ import sys
 import numpy
 import pyopencl as cl
 import numloopy as nplp
+from loopy.version import LOOPY_USE_LANGUAGE_VERSION_2018_2  # noqa: F401
 
 try:
     import faulthandler
