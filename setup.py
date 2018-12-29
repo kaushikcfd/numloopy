@@ -13,7 +13,7 @@ finally:
 exec(compile(version_file_contents, "numloopy/version.py", 'exec'), ver_dic)
 
 setup(name="numloopy",
-      version="2017.1",
+      version="2018.1",
       description="Lazy evaluation for array expressions, based on loopy",
       long_description=open("README.rst").read(),
       classifiers=[
@@ -25,9 +25,6 @@ setup(name="numloopy",
           'Natural Language :: English',
           'Programming Language :: Python',
           'Programming Language :: Python',
-          'Programming Language :: Python :: 2',
-          'Programming Language :: Python :: 2.6',
-          'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3.3',
           'Programming Language :: Python :: 3.4',
@@ -40,8 +37,11 @@ setup(name="numloopy",
           ],
 
       install_requires=[
-          "loo.py",
+          "loo.py>=2018.1",
           "numpy>=1.6.0",
+          ],
+      dependency_links=[
+          "git+https://github.com/inducer/loopy.git"
           ],
 
       author="Kaushik Kulkarni",
