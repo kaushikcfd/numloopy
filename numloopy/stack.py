@@ -400,6 +400,13 @@ class Stack(Record):
 
         :param variables_needed: An instance of :class:`tuple` of the variables
         that must be computed
+
+        :return: An instance of :class:`loopy.LoopKerneel` for the computations
+            registered on the stack. If ``transform=True`` the transformation
+            data is also returned through the tuple ``knl, tf_data``. The
+            transformation data ``tf_data`` is a mapping from names of the
+            variables which are to be evaluated to the tuple of inames which
+            are involved in their respective assignments.
         """
         statements = []
         tf_data = {}
@@ -466,8 +473,7 @@ class Stack(Record):
                 kernel_data=data,
                 seq_dependencies=True,
                 lang_version=(2018, 2))
-        knl = knl.copy(substitutions=substitutions,
-                target=lp.CTarget())
+        knl = knl.copy(substitutions=substitutions)
         if transform:
             return knl, tf_data
         else:

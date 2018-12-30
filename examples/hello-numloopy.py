@@ -8,4 +8,4 @@ b = np.arange(10)
 c = 2*a + 3*b
 
 knl = np.end_computation_stack([a, c])
-print(lp.generate_code_v2(knl.copy(target=lp.PyOpenCLTarget())).device_code())
+print(lp.generate_code_v2(knl).device_code())
