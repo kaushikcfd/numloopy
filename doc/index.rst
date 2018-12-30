@@ -67,6 +67,9 @@ Table of Contents
 .. toctree::
     :maxdepth: 2
 
+    ref_stack
+    ref_array_sym
+
 Indices and tables
 ==================
 
