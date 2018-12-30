@@ -102,6 +102,18 @@ class Stack(Record):
         A mapping from from substitution names to arrays that are equivalently
         used.
 
+    .. automethod:: __init__
+    .. automethod:: register_substitution
+    .. automethod:: register_implicit_assignment
+    .. automethod:: get_substitution
+    .. automethod:: zeros
+    .. automethod:: ones
+    .. automethod:: arange
+    .. automethod:: sum
+    .. automethod:: cumsum
+    .. automethod:: argument
+    .. automethod:: end_computation_stack
+
     """
     def __init__(self, domains=[], registered_substitutions=[],
             implicit_assignments={},
@@ -237,11 +249,11 @@ class Stack(Record):
         are filled equivalent to ``numpy.arange``.
 
         :arg stop: An instance of :class:`int` denoting the extent of the
-        array.
+            array.
 
         :return: An instance of :class:`numloopy.ArraySymbol` of shape
-        ``(stop,)``, corresponding to the substitution rule which was
-        registered.
+            ``(stop,)``, corresponding to the substitution rule which was
+            registered.
         """
         assert isinstance(stop, int)
         subst_name = self.name_generator(based_on="subst")
@@ -407,8 +419,8 @@ class Stack(Record):
         Returns an instance :class:`loopy.LoopKernel` corresponding to the
         computations pushed in the computation stack.
 
-        :param variables_needed: An instance of :class:`tuple` of the variables
-        that must be computed
+        :arg variables_needed: An instance of :class:`tuple` of the variables
+            that must be computed
 
         :return: An instance of :class:`loopy.LoopKerneel` for the computations
             registered on the stack. If ``transform=True`` the transformation

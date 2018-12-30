@@ -12,21 +12,39 @@ __doc__ = """
 
 
 class ArraySymbol(lp.ArrayArg):
-    __doc__ = lp.ArrayArg.__doc__ + (
-            """
-            :attribute stack: An instance of :class:`numloopy.Stack`
+    """
+    User facing view of a substitution registered on a stack.
 
-            .. automethod:: __init__
-            .. automethod:: _arithmetic_op
-            .. automethod:: __add__
-            .. automethod:: __sub__
-            .. automethod:: __mul__
-            .. automethod:: __lt__
-            .. automethod:: __gt__
-            .. automethod:: __setitem__
-            .. automethod:: __getitem__
-            .. automethod:: reshape
-            """)
+    .. attribute stack::
+
+        An instance of :class:`numloopy.Stack`
+
+    .. attribute shape::
+
+        An instance of :class:`tuple` of ints.
+
+    .. attribute dim_tags::
+
+        Represents the stride of the array. Refer
+        :attr:`loopy.ArrayBase.dim_tags` for the representation of the strides.
+
+    .. attribute order::
+
+        Either 'C' or 'F'. Denotes either row-major or column-major type of
+        data access pattern.
+
+    .. automethod:: __init__
+    .. automethod:: _arithmetic_op
+    .. automethod:: reshape
+    .. automethod:: __add__
+    .. automethod:: __sub__
+    .. automethod:: __mul__
+    .. automethod:: __truediv__
+    .. automethod:: __lt__
+    .. automethod:: __gt__
+    .. automethod:: __setitem__
+    .. automethod:: __getitem__
+    """
     allowed_extra_kwargs = [
             "address_space",
             "is_output_only",
@@ -52,7 +70,7 @@ class ArraySymbol(lp.ArrayArg):
     def _arithmetic_op(self, other, op):
         """
         Registers a substitution rule that performs ``(self) op (other)``
-        element-wise for the arrays. :mod:`numpy: broadcasting rules are
+        element-wise for the arrays. :mod:`numpy` broadcasting rules are
         followed while performing these operations.
 
         :return: An instance of :class:`ArraySymbol` corresponding to the
@@ -187,24 +205,72 @@ class ArraySymbol(lp.ArrayArg):
             raise NotImplementedError('__mul__ for', type(other))
 
     def __add__(self, other):
+        """
+        Registers a computation for ``self+other``. Calls
+        :func:`ArraySymbol._arithmetic_op` in the backend.
+
+        :arg other: An instance of :class:`Number` or
+            :class:`numloopy.ArraySymbol` for which `+` is legal after applying
+            NumPy's broadcasting rules.
+        """
         return self._arithmetic_op(other, '+')
 
     def __sub__(self, other):
+        """
+        Registers a computation for ``self-other``. Calls
+        :func:`ArraySymbol._arithmetic_op` in the backend.
+
+        :arg other: An instance of :class:`Number` or
+            :class:`numloopy.ArraySymbol` for which `-` is legal after applying
+            NumPy's broadcasting rules.
+        """
         return self._arithmetic_op(other, '-')
 
     def __rsub__(self, other):
         return -1*self._arithmetic_op(other, '-')
 
     def __mul__(self, other):
+        """
+        Registers a computation for ``self*other``. Calls
+        :func:`ArraySymbol._arithmetic_op` in the backend.
+
+        :arg other: An instance of :class:`Number` or
+            :class:`numloopy.ArraySymbol` for which `*` is legal after applying
+            NumPy's broadcasting rules.
+        """
         return self._arithmetic_op(other, '*')
 
     def __truediv__(self, other):
+        """
+        Registers a computation for ``self/other``. Calls
+        :func:`ArraySymbol._arithmetic_op` in the backend.
+
+        :arg other: An instance of :class:`Number` or
+            :class:`numloopy.ArraySymbol` for which `/` is legal after applying
+            NumPy's broadcasting rules.
+        """
         return self._arithmetic_op(other, '/')
 
     def __lt__(self, other):
+        """
+        Registers a computation for ``self<other``. Calls
+        :func:`ArraySymbol._arithmetic_op` in the backend.
+
+        :arg other: An instance of :class:`Number` or
+            :class:`numloopy.ArraySymbol` for which `<` is legal after applying
+            NumPy's broadcasting rules.
+        """
         return self._arithmetic_op(other, '<')
 
     def __gt__(self, other):
+        """
+        Registers a computation for ``self>other``. Calls
+        :func:`ArraySymbol._arithmetic_op` in the backend.
+
+        :arg other: An instance of :class:`Number` or
+            :class:`numloopy.ArraySymbol` for which `>` is legal after applying
+            NumPy's broadcasting rules.
+        """
         return self._arithmetic_op(other, '>')
 
     def __setitem__(self, index, value):

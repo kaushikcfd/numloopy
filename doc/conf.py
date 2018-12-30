@@ -14,6 +14,7 @@
 #import sys
 import os
 
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -36,14 +37,16 @@ extensions = [
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
-# The suffix of source filenames.
-source_suffix = '.rst'
-
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
 
 # The master toctree document.
 master_doc = 'index'
+
+
+# The suffix of source filenames.
+source_suffix = '.rst'
+
 
 # General information about the project.
 project = u'numloopy'
@@ -103,22 +106,27 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ---------------------------------------------------
 
-html_theme = "alabaster"
+html_theme = 'bizstyle'
+
+# html_theme_options = {
+#         "extra_nav_links": {
+#             "🚀 Github": "https://github.com/kaushikcfd/numloopy",
+#             }
+#         }
 
 html_theme_options = {
-        "extra_nav_links": {
-            "🚀 Github": "https://github.com/kaushikcfd/numloopy",
-            }
-        }
+    'rightsidebar': False,
+    }
 
-html_sidebars = {
-    '**': [
-        'about.html',
-        'navigation.html',
-        'relations.html',
-        'searchbox.html',
-    ]
-}
+
+# html_sidebars = {
+#     '**': [
+#         'about.html',
+#         'navigation.html',
+#         'relations.html',
+#         'searchbox.html',
+#     ]
+# }
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
