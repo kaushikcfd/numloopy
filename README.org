@@ -1,0 +1,12 @@
+#+TITLE: NumLoopy
+
+=NumLoopy= for array expressions, based on
+[[https://documen.tician.de/loopy][loopy]].
+
+The documentation can be accessed
+[[https://kaushikcfd.github.io/numloopy/][here]].
+
+----
+
+=NumLoopy= is licensed under the [[https://kaushikcfd.github.io/numloopy/][MIT
+license]] and free for commercial, academic, and private use.
