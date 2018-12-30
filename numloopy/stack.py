@@ -10,6 +10,15 @@ from loopy.isl_helpers import make_slab
 from numbers import Number
 
 
+__doc__ = """
+.. currentmodule:: numloopy
+
+.. autofunction:: begin_computation_stack
+.. autoclass:: Stack
+
+"""
+
+
 def fill_array(shape, value, name_generator):
     """
     Helper function to fill an array of shape ``shape`` with ``value`` .

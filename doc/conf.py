@@ -47,7 +47,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'numloopy'
-copyright = u'2016, Andreas Klöckner'
+copyright = u'2019, Kaushik Kulkarni'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -107,8 +107,7 @@ html_theme = "alabaster"
 
 html_theme_options = {
         "extra_nav_links": {
-            "🚀 Github": "https://github.com/inducer/numloopy",
-            "💾 Download Releases": "https://pypi.python.org/pypi/loo.py",
+            "🚀 Github": "https://github.com/kaushikcfd/numloopy",
             }
         }
 
@@ -207,7 +206,7 @@ htmlhelp_basename = 'numloopydoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
         ('index', 'numloopy.tex', u'numloopy Documentation',
-            u'Andreas Kloeckner', 'manual'),
+            u'Kaushik Kulkarni', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -240,7 +239,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'numloopy', u'numloopy Documentation',
-     [u'Andreas Kloeckner'], 1)
+     [u'Kaushik Kulkarni'], 1)
 ]
 
 

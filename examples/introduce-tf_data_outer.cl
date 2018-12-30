@@ -1,9 +1,3 @@
-#define lid(N) ((int) get_local_id(N))
-#define gid(N) ((int) get_group_id(N))
-#if __OPENCL_C_VERSION__ < 120
-#pragma OPENCL EXTENSION cl_khr_fp64: enable
-#endif
-
 __kernel void __attribute__ ((reqd_work_group_size(1, 1, 1))) loopy_kernel(__global double const *__restrict__ arr, __global double *__restrict__ arr_0)
 {
   for (int i_15 = 0; i_15 <= 3; ++i_15)

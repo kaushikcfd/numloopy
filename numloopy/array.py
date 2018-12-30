@@ -6,11 +6,26 @@ from pymbolic.primitives import Variable, Call, Subscript
 from pymbolic import parse
 from loopy.isl_helpers import make_slab, simplify_via_aff
 
+__doc__ = """
+.. autoclass:: ArraySymbol
+"""
+
 
 class ArraySymbol(lp.ArrayArg):
     __doc__ = lp.ArrayArg.__doc__ + (
             """
             :attribute stack: An instance of :class:`numloopy.Stack`
+
+            .. automethod:: __init__
+            .. automethod:: _arithmetic_op
+            .. automethod:: __add__
+            .. automethod:: __sub__
+            .. automethod:: __mul__
+            .. automethod:: __lt__
+            .. automethod:: __gt__
+            .. automethod:: __setitem__
+            .. automethod:: __getitem__
+            .. automethod:: reshape
             """)
     allowed_extra_kwargs = [
             "address_space",
