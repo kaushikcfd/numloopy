@@ -15,7 +15,7 @@ exec(compile(version_file_contents, "numloopy/version.py", 'exec'), ver_dic)
 setup(name="numloopy",
       version="2018.1",
       description="Lazy evaluation for array expressions, based on loopy",
-      long_description=open("README.rst").read(),
+      long_description=open("README.org").read(),
       classifiers=[
           'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',

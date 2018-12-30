@@ -8,5 +8,5 @@ The documentation can be accessed
 
 ----
 
-=NumLoopy= is licensed under the [[https://kaushikcfd.github.io/numloopy/][MIT
+=NumLoopy= is licensed under the [[https://github.com/kaushikcfd/numloopy/LICENSE][MIT
 license]] and free for commercial, academic, and private use.
