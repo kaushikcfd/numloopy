@@ -1,0 +1,265 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Reference: Computational Stack &#8212; numloopy 2018.1 documentation</title>
+    <link rel="stylesheet" href="_static/traditional.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Reference: ArraySymbol" href="ref_array_sym.html" />
+    <link rel="prev" title="NumLoopy" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="ref_array_sym.html" title="Reference: ArraySymbol"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="NumLoopy"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">numloopy 2018.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="reference-computational-stack">
+<h1>Reference: Computational Stack<a class="headerlink" href="#reference-computational-stack" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="numloopy.Stack">
+<em class="property">class </em><code class="descclassname">numloopy.</code><code class="descname">Stack</code><span class="sig-paren">(</span><em>domains=[]</em>, <em>registered_substitutions=[]</em>, <em>implicit_assignments={}</em>, <em>data=[]</em>, <em>substs_to_arrays={}</em>, <em>name_generator=&lt;pytools.UniqueNameGenerator object&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.Stack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Records the information about the computation stack.</p>
+<dl class="method">
+<dt id="numloopy.Stack.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>domains=[]</em>, <em>registered_substitutions=[]</em>, <em>implicit_assignments={}</em>, <em>data=[]</em>, <em>substs_to_arrays={}</em>, <em>name_generator=&lt;pytools.UniqueNameGenerator object&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.Stack.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.Stack.register_substitution">
+<code class="descname">register_substitution</code><span class="sig-paren">(</span><em>rule</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.Stack.register_substitution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a substitution rule on the top of the stack.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rule</strong> – An instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">loopy.SubstitutionRule</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.Stack.register_implicit_assignment">
+<code class="descname">register_implicit_assignment</code><span class="sig-paren">(</span><em>insn</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.Stack.register_implicit_assignment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers an instruction <code class="docutils literal notranslate"><span class="pre">insn</span></code> at the top of the stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.Stack.get_substitution">
+<code class="descname">get_substitution</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.Stack.get_substitution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the substiution rule corresponding to the substitution
+registered with the name <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> – An instance of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">An instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">loopy.SubstitutionRule</span></code> registered
+with the name <code class="docutils literal notranslate"><span class="pre">name</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.Stack.zeros">
+<code class="descname">zeros</code><span class="sig-paren">(</span><em>shape</em>, <em>dtype=&lt;class 'numpy.float64'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.Stack.zeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a substitution rule on to the stack with an array whose values
+are filled with 0.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">loopy.ArraySymbol</span></code>, corresponding to the
+substitution rule which was registered.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.Stack.ones">
+<code class="descname">ones</code><span class="sig-paren">(</span><em>shape</em>, <em>dtype=&lt;class 'numpy.float64'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.Stack.ones" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a substitution rule on to the stack with an array whose values
+are filled with 1.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">loopy.ArraySymbol</span></code>, corresponding to the
+substitution rule which was registered.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.Stack.arange">
+<code class="descname">arange</code><span class="sig-paren">(</span><em>stop</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.Stack.arange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a substitution rule on to the stack with an array whose values
+are filled equivalent to <code class="docutils literal notranslate"><span class="pre">numpy.arange</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>stop</strong> – An instance of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> denoting the extent of the
+array.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">An instance of <a class="reference internal" href="ref_array_sym.html#numloopy.ArraySymbol" title="numloopy.ArraySymbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">numloopy.ArraySymbol</span></code></a> of shape
+<code class="docutils literal notranslate"><span class="pre">(stop,)</span></code>, corresponding to the substitution rule which was
+registered.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.Stack.sum">
+<code class="descname">sum</code><span class="sig-paren">(</span><em>arg</em>, <em>axis=None</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.Stack.sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers  a substitution rule in order to sum the elements of array
+<code class="docutils literal notranslate"><span class="pre">arg</span></code> along <code class="docutils literal notranslate"><span class="pre">axis</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An instance of <a class="reference internal" href="ref_array_sym.html#numloopy.ArraySymbol" title="numloopy.ArraySymbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">numloopy.ArraySymbol</span></code></a> which is
+which is registered as the sum-substitution rule.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.Stack.cumsum">
+<code class="descname">cumsum</code><span class="sig-paren">(</span><em>arg</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.Stack.cumsum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers  a substitution rule in order to cumulatively sum the
+elements of array <code class="docutils literal notranslate"><span class="pre">arg</span></code> along <code class="docutils literal notranslate"><span class="pre">axis</span></code>. Mimics <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.cumsum.html#numpy.cumsum" title="(in NumPy v1.15)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.cumsum()</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An instance of <a class="reference internal" href="ref_array_sym.html#numloopy.ArraySymbol" title="numloopy.ArraySymbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">numloopy.ArraySymbol</span></code></a> which is
+which is registered as the cumulative summed-substitution rule.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.Stack.argument">
+<code class="descname">argument</code><span class="sig-paren">(</span><em>shape</em>, <em>dtype=&lt;class 'numpy.float64'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.Stack.argument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an instance of <a class="reference internal" href="ref_array_sym.html#numloopy.ArraySymbol" title="numloopy.ArraySymbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">numloopy.ArraySymbol</span></code></a> which the loop
+kernel expects as an input argument.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.Stack.end_computation_stack">
+<code class="descname">end_computation_stack</code><span class="sig-paren">(</span><em>evaluate=()</em>, <em>transform=False</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.Stack.end_computation_stack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an instance <code class="xref py py-class docutils literal notranslate"><span class="pre">loopy.LoopKernel</span></code> corresponding to the
+computations pushed in the computation stack.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>variables_needed</strong> – An instance of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of the variables
+that must be computed</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">An instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">loopy.LoopKerneel</span></code> for the computations
+registered on the stack. If <code class="docutils literal notranslate"><span class="pre">transform=True</span></code> the transformation
+data is also returned through the tuple <code class="docutils literal notranslate"><span class="pre">knl,</span> <span class="pre">tf_data</span></code>. The
+transformation data <code class="docutils literal notranslate"><span class="pre">tf_data</span></code> is a mapping from names of the
+variables which are to be evaluated to the tuple of inames which
+are involved in their respective assignments.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="numloopy.begin_computation_stack">
+<code class="descclassname">numloopy.</code><code class="descname">begin_computation_stack</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.begin_computation_stack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Must be called to initialize a computational stack.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">NumLoopy</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ref_array_sym.html"
+                        title="next chapter">Reference: ArraySymbol</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="ref_array_sym.html" title="Reference: ArraySymbol"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="NumLoopy"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">numloopy 2018.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Kaushik Kulkarni.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.3.
+    </div>
+  </body>
+</html>

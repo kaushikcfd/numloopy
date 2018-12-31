@@ -1,0 +1,308 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Reference: ArraySymbol &#8212; numloopy 2018.1 documentation</title>
+    <link rel="stylesheet" href="_static/traditional.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Reference: Computational Stack" href="ref_stack.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="ref_stack.html" title="Reference: Computational Stack"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">numloopy 2018.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="reference-arraysymbol">
+<h1>Reference: ArraySymbol<a class="headerlink" href="#reference-arraysymbol" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="numloopy.ArraySymbol">
+<em class="property">class </em><code class="descclassname">numloopy.</code><code class="descname">ArraySymbol</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.ArraySymbol" title="Permalink to this definition">¶</a></dt>
+<dd><p>User facing view of a substitution registered on a stack.</p>
+<dl class="method">
+<dt id="numloopy.ArraySymbol.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.ArraySymbol.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>All of the following (except <em>name</em>) are optional.
+Specify either strides or shape.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> – When passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">loopy.make_kernel</span></code>, this may contain
+multiple names separated by commas, in which case multiple arguments,
+each with identical properties, are created for each name.</li>
+<li><strong>shape</strong> – May be any of the things specified under <code class="xref py py-attr docutils literal notranslate"><span class="pre">shape</span></code>,
+or a string which can be parsed into the previous form.</li>
+<li><strong>dim_tags</strong> – A comma-separated list of tags as understood by
+<code class="xref py py-func docutils literal notranslate"><span class="pre">parse_array_dim_tag()</span></code>.</li>
+<li><strong>strides</strong> – <p>May be one of the following:</p>
+<ul>
+<li>None</li>
+<li><code class="xref py py-class docutils literal notranslate"><span class="pre">loopy.auto</span></code>. The strides will be determined by <em>order</em>
+and the access footprint.</li>
+<li>a tuple like like <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.shape.html#numpy.ndarray.shape" title="(in NumPy v1.15)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">numpy.ndarray.shape</span></code></a>.<p>Each entry of the tuple is also allowed to be a <code class="xref py py-mod docutils literal notranslate"><span class="pre">pymbolic</span></code>
+expression involving kernel parameters, or a (potentially-comma
+separated) or a string that can be parsed to such an expression.</p>
+</li>
+<li>A string which can be parsed into the previous form.</li>
+</ul>
+</li>
+<li><strong>order</strong> – “F” or “C” for C (row major) or Fortran
+(column major). Defaults to the <em>default_order</em> argument
+passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">loopy.make_kernel()</span></code>.</li>
+<li><strong>for_atomic</strong> – Whether the array is declared for atomic access, and, if necessary,
+using atomic-capable data types.</li>
+<li><strong>offset</strong> – (See <code class="xref py py-attr docutils literal notranslate"><span class="pre">offset</span></code>)</li>
+<li><strong>alignment</strong> – memory alignment in bytes</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.ArraySymbol._arithmetic_op">
+<code class="descname">_arithmetic_op</code><span class="sig-paren">(</span><em>other</em>, <em>op</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.ArraySymbol._arithmetic_op" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a substitution rule that performs <code class="docutils literal notranslate"><span class="pre">(self)</span> <span class="pre">op</span> <span class="pre">(other)</span></code>
+element-wise for the arrays. <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/index.html#module-numpy" title="(in NumPy v1.15)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a> broadcasting rules are
+followed while performing these operations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An instance of <a class="reference internal" href="#numloopy.ArraySymbol" title="numloopy.ArraySymbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArraySymbol</span></code></a> corresponding to the
+registered substitution for the element-wise operation.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.ArraySymbol.reshape">
+<code class="descname">reshape</code><span class="sig-paren">(</span><em>new_shape</em>, <em>order='C'</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.ArraySymbol.reshape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a substitution rule to reshape array with the shape
+<code class="docutils literal notranslate"><span class="pre">new_shape</span></code>. Mimics <code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.ndarray.reshape()</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>new_shape</strong> – An instance of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>.</li>
+<li><strong>order</strong> – Either ‘C’ or ‘F’</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.ArraySymbol.__add__">
+<code class="descname">__add__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.ArraySymbol.__add__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a computation for <code class="docutils literal notranslate"><span class="pre">self+other</span></code>. Calls
+<a class="reference internal" href="#numloopy.ArraySymbol._arithmetic_op" title="numloopy.ArraySymbol._arithmetic_op"><code class="xref py py-func docutils literal notranslate"><span class="pre">ArraySymbol._arithmetic_op()</span></code></a> in the backend.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> – An instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">Number</span></code> or
+<a class="reference internal" href="#numloopy.ArraySymbol" title="numloopy.ArraySymbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">numloopy.ArraySymbol</span></code></a> for which <cite>+</cite> is legal after applying
+NumPy’s broadcasting rules.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.ArraySymbol.__sub__">
+<code class="descname">__sub__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.ArraySymbol.__sub__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a computation for <code class="docutils literal notranslate"><span class="pre">self-other</span></code>. Calls
+<a class="reference internal" href="#numloopy.ArraySymbol._arithmetic_op" title="numloopy.ArraySymbol._arithmetic_op"><code class="xref py py-func docutils literal notranslate"><span class="pre">ArraySymbol._arithmetic_op()</span></code></a> in the backend.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> – An instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">Number</span></code> or
+<a class="reference internal" href="#numloopy.ArraySymbol" title="numloopy.ArraySymbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">numloopy.ArraySymbol</span></code></a> for which <cite>-</cite> is legal after applying
+NumPy’s broadcasting rules.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.ArraySymbol.__mul__">
+<code class="descname">__mul__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.ArraySymbol.__mul__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a computation for <code class="docutils literal notranslate"><span class="pre">self*other</span></code>. Calls
+<a class="reference internal" href="#numloopy.ArraySymbol._arithmetic_op" title="numloopy.ArraySymbol._arithmetic_op"><code class="xref py py-func docutils literal notranslate"><span class="pre">ArraySymbol._arithmetic_op()</span></code></a> in the backend.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> – An instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">Number</span></code> or
+<a class="reference internal" href="#numloopy.ArraySymbol" title="numloopy.ArraySymbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">numloopy.ArraySymbol</span></code></a> for which <cite>*</cite> is legal after applying
+NumPy’s broadcasting rules.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.ArraySymbol.__truediv__">
+<code class="descname">__truediv__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.ArraySymbol.__truediv__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a computation for <code class="docutils literal notranslate"><span class="pre">self/other</span></code>. Calls
+<a class="reference internal" href="#numloopy.ArraySymbol._arithmetic_op" title="numloopy.ArraySymbol._arithmetic_op"><code class="xref py py-func docutils literal notranslate"><span class="pre">ArraySymbol._arithmetic_op()</span></code></a> in the backend.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> – An instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">Number</span></code> or
+<a class="reference internal" href="#numloopy.ArraySymbol" title="numloopy.ArraySymbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">numloopy.ArraySymbol</span></code></a> for which <cite>/</cite> is legal after applying
+NumPy’s broadcasting rules.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.ArraySymbol.__lt__">
+<code class="descname">__lt__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.ArraySymbol.__lt__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a computation for <code class="docutils literal notranslate"><span class="pre">self&lt;other</span></code>. Calls
+<a class="reference internal" href="#numloopy.ArraySymbol._arithmetic_op" title="numloopy.ArraySymbol._arithmetic_op"><code class="xref py py-func docutils literal notranslate"><span class="pre">ArraySymbol._arithmetic_op()</span></code></a> in the backend.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> – An instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">Number</span></code> or
+<a class="reference internal" href="#numloopy.ArraySymbol" title="numloopy.ArraySymbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">numloopy.ArraySymbol</span></code></a> for which <cite>&lt;</cite> is legal after applying
+NumPy’s broadcasting rules.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.ArraySymbol.__gt__">
+<code class="descname">__gt__</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.ArraySymbol.__gt__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a computation for <code class="docutils literal notranslate"><span class="pre">self&gt;other</span></code>. Calls
+<a class="reference internal" href="#numloopy.ArraySymbol._arithmetic_op" title="numloopy.ArraySymbol._arithmetic_op"><code class="xref py py-func docutils literal notranslate"><span class="pre">ArraySymbol._arithmetic_op()</span></code></a> in the backend.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> – An instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">Number</span></code> or
+<a class="reference internal" href="#numloopy.ArraySymbol" title="numloopy.ArraySymbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">numloopy.ArraySymbol</span></code></a> for which <cite>&gt;</cite> is legal after applying
+NumPy’s broadcasting rules.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.ArraySymbol.__setitem__">
+<code class="descname">__setitem__</code><span class="sig-paren">(</span><em>index</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.ArraySymbol.__setitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers an assignment in order to make the indices represented by
+<code class="docutils literal notranslate"><span class="pre">index</span></code> to <code class="docutils literal notranslate"><span class="pre">value</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>index</strong> – An instance of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, or <a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">slice</span></code></a> or
+<a class="reference internal" href="#numloopy.ArraySymbol" title="numloopy.ArraySymbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">numloopy.ArraySymbol</span></code></a>.</li>
+<li><strong>value</strong> – An instance of <a class="reference internal" href="#numloopy.ArraySymbol" title="numloopy.ArraySymbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">numloopy.ArraySymbol</span></code></a>, with the same
+shape as represented by <code class="docutils literal notranslate"><span class="pre">index</span></code>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="numloopy.ArraySymbol.__getitem__">
+<code class="descname">__getitem__</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#numloopy.ArraySymbol.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a substitution rule pointing to the indices through <cite>index</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>index</strong> – An instance of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of int, slices or
+<a class="reference internal" href="#numloopy.ArraySymbol" title="numloopy.ArraySymbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArraySymbol</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ref_stack.html"
+                        title="previous chapter">Reference: Computational Stack</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="ref_stack.html" title="Reference: Computational Stack"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">numloopy 2018.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Kaushik Kulkarni.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.3.
+    </div>
+  </body>
+</html>

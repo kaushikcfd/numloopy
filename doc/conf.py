@@ -106,20 +106,18 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ---------------------------------------------------
 
-html_theme = 'bizstyle'
-
-# html_theme_options = {
-#         "extra_nav_links": {
-#             "🚀 Github": "https://github.com/kaushikcfd/numloopy",
-#             }
-#         }
+html_theme = 'traditional'
 
 html_theme_options = {
-    'rightsidebar': False,
-    }
+        "extra_nav_links": {
+            "🚀 Github": "https://github.com/kaushikcfd/numloopy",
+            }
+        }
+
+html_theme_options = {}
 
 
-# html_sidebars = {
+# html_sidebars =
 #     '**': [
 #         'about.html',
 #         'navigation.html',
