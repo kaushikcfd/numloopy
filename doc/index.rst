@@ -14,12 +14,13 @@ kernels can then be translated to various `backends
 In order to fully understand the transformation model of NumLoopy, it is
 strongly advised be familiar with loopy's semantics.
 
-.. literalinclude:: ../examples/hello-numloopy.py
-
-This example is included in the :mod:`numloopy` distribution as
+The following example is included in the :mod:`numloopy` distribution as
 :download:`examples/hello-numloopy.py <../examples/hello-numloopy.py>`.
 
-When you run this script, the following kernel is generated, compiled, and executed:
+.. literalinclude:: ../examples/hello-numloopy.py
+
+
+When the above script is run, the following kernel is generated:
 
 .. literalinclude:: ../examples/hello-numloopy.cl
     :language: c
@@ -28,9 +29,9 @@ When you run this script, the following kernel is generated, compiled, and execu
 Lazy Evaluation
 ---------------
 
-The variables only which are needed to be computed can be mentioned must be
+The variables which are of interest at the end of the computation must be
 passed to  ``evaluate`` argument of the
-:func:`numloopy.Stack.end_computation_stack`. All the other variables are
+:func:`numloopy.Stack.end_computation_stack`. All other variables are
 substituted as expression into the computations. Thereby, only lazily
 evaluating the specified variables.
 
@@ -50,7 +51,7 @@ And when the above script is run, the generated code is
 .. literalinclude:: ../examples/introduce-tf_data_inner.cl
     :language: c
 
-The same code with ``UNROLLED_LOOP=2`` (*outer loop is unrolled*) generates
+The same code with ``UNROLLED_LOOP=2`` (*outermost loop is unrolled*) generates
 
 .. literalinclude:: ../examples/introduce-tf_data_outer.cl
     :language: c
