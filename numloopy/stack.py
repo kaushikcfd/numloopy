@@ -120,13 +120,13 @@ class Stack(Record):
             data=[], substs_to_arrays={},
             name_generator=UniqueNameGenerator()):
 
-        self.domains = domains
-        self.data = data
-        self.substs_to_arrays = substs_to_arrays
-        self.registered_substitutions = registered_substitutions
-        self.implicit_assignments = implicit_assignments
-
-        self.name_generator = name_generator
+        super(Stack, self).__init__(
+                domains=domains,
+                registered_substitutions=registered_substitutions,
+                substs_to_arrays=substs_to_arrays,
+                implicit_assignments=implicit_assignments,
+                data=data,
+                name_generator=name_generator)
 
     def register_substitution(self, rule):
         """

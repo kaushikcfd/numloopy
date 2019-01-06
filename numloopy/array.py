@@ -77,6 +77,7 @@ class ArraySymbol(lp.ArrayArg):
             registered substitution for the element-wise operation.
         """
         assert op in ['+', '-', '*', '/', '<', '<=', '>', '>=']
+        assert self.stack == other.stack
 
         def _apply_op(var1, var2):
             if op == '+':
@@ -167,11 +168,11 @@ class ArraySymbol(lp.ArrayArg):
                             tuple(Variable(iname) if axis_len != 1 else 0 for
                             iname, axis_len in zip(inames[-len(left.shape):],
                                 left.shape)))
-                    rule = lp.SubstitutionRule(left.name,
+                    rule = lp.SubstitutionRule(subst_name,
                             inames,
                             Variable(left.name)(*indices))
                     self.stack.register_substitution(rule)
-                    new_left = left.copy(stack=self.stack, name=subst_name,
+                    new_left = left.copy(name=subst_name,
                             shape=new_shape, dim_tags=None, order=left.order)
                 else:
                     new_left = left
@@ -194,7 +195,7 @@ class ArraySymbol(lp.ArrayArg):
                             inames,
                             Variable(right.name)(*indices))
                     self.stack.register_substitution(rule)
-                    new_right = right.copy(stack=self.stack, name=subst_name,
+                    new_right = right.copy(name=subst_name,
                             shape=new_shape, dim_tags=None, order=right.order)
                 else:
                     new_right = right
@@ -403,9 +404,6 @@ class ArraySymbol(lp.ArrayArg):
             linearized_idx -= current_idx*stride
 
         # should we assert that the linearized index is 0?
-
-        if self.dim_tags[-1].stride == 1:
-            indices = indices[::-1]
 
         rule = lp.SubstitutionRule(
                 subst_name,

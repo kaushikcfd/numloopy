@@ -53,6 +53,49 @@ def test_axpy_like(ctx_factory):
     assert numpy.allclose(np_c, nplp_c)
 
 
+def test_matmul(ctx_factory):
+    ctx = ctx_factory()
+    queue = cl.CommandQueue(ctx)
+
+    n = 16
+
+    def func_nplp(A_in, B_in):
+        np = nplp.begin_computation_stack()
+
+        A = np.argument((n, n))
+        B = np.argument((n, n))
+
+        A1 = A.reshape((n, n, 1))
+        B1 = B.reshape((1, n, n))
+        C1 = A1*B1
+
+        C = np.sum(C1, axis=1)
+
+        knl = np.end_computation_stack((C, ))
+
+        evt, (out_c, ) = knl(queue, **{A.name: A_in, B.name: B_in})
+
+        return out_c.get()
+
+    def func_np(A, B):
+        import numpy as np
+
+        A1 = A.reshape((n, n, 1))
+        B1 = B.reshape((1, n, n))
+        C1 = A1*B1
+
+        C = np.sum(C1, axis=1)
+
+        return C
+
+    A_in, B_in = numpy.random.rand(n, n), numpy.random.rand(n, n)
+
+    nplp_c = func_np(A_in, B_in)
+    np_c = func_np(A_in, B_in)
+
+    assert numpy.allclose(np_c, nplp_c)
+
+
 def test_qudrant_splitting(ctx_factory):
 
     ctx = ctx_factory()
