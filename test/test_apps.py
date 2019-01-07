@@ -78,15 +78,7 @@ def test_matmul(ctx_factory):
         return out_c.get()
 
     def func_np(A, B):
-        import numpy as np
-
-        A1 = A.reshape((n, n, 1))
-        B1 = B.reshape((1, n, n))
-        C1 = A1*B1
-
-        C = np.sum(C1, axis=1)
-
-        return C
+        return A @ B
 
     A_in, B_in = numpy.random.rand(n, n), numpy.random.rand(n, n)
 
